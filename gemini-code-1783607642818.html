@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algomancer RPG: Hell Gate Edition</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        #game-window {
+            background-color: #1e1e24;
+            border: 4px solid #6c5ce7;
+            border-radius: 8px;
+            width: 720px;
+            height: 640px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(108, 92, 231, 0.5);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        #scene-header {
+            text-align: center;
+            font-size: 22px;
+            color: #a29bfe;
+            border-bottom: 2px dashed #6c5ce7;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        /* OVERWORLD GRID UI */
+        #overworld-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(10, 45px);
+            grid-template-rows: repeat(10, 45px);
+            gap: 2px;
+            background-color: #2d3436;
+            padding: 5px;
+            border-radius: 5px;
+            border: 2px solid #6c5ce7;
+        }
+        .cell {
+            width: 45px;
+            height: 45px;
+            background-color: #00b894; /* Grass */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            border-radius: 3px;
+            user-select: none;
+        }
+        .cell.tree { background-color: #006266; }
+        .cell.path { background-color: #dfe6e9; }
+        .cell.gate { background-color: #d63031; }
+        .cell.unlocked-gate { background-color: #fdcb6e; }
+        .cell.hell-gate {
+            background-color: #2d0000;
+            border: 2px solid #ff7675;
+            box-shadow: 0 0 10px #d63031;
+            animation: pulse 1.2s infinite alternate;
+        }
+        @keyframes pulse {
+            from { opacity: 0.6; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1.05); }
+        }
+
+        #quest-banner {
+            background: #2d3436;
+            color: #ffeaa7;
+            padding: 8px 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            border: 1px solid #fdcb6e;
+            text-align: center;
+            width: 90%;
+        }
+
+        /* DIALOGUE UI */
+        #dialogue-container {
+            display: none;
+            flex-direction: column;
+            justify-content: flex-end;
+            flex-grow: 1;
+            margin-bottom: 20px;
+        }
+        .dialogue-box {
+            background-color: #2d3436;
+            border: 2px solid #b2bec3;
+            border-radius: 5px;
+            padding: 15px;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .portrait-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 5px;
+            border: 2px solid #fdcb6e;
+            background-color: #1e1e24;
+            object-fit: cover;
+        }
+        .dialogue-content { flex-grow: 1; }
+        .speaker-name {
+            color: #fdcb6e;
+            font-weight: bold;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        #dialogue-text { font-size: 16px; line-height: 1.4; }
+
+        /* BATTLE UI */
+        #battle-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+        }
+        #monster-sprite {
+            font-size: 60px;
+            margin: 10px 0;
+            animation: float 2s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        #combat-log {
+            color: #ffeaa7;
+            height: 20px;
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+        #move-counter {
+            color: #ff7675;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+            display: none;
+        }
+        #spell-menu { display: flex; gap: 10px; margin: 10px 0; }
+        .spell-btn { background-color: #0984e3; margin-top: 0; }
+        .spell-btn:hover { background-color: #74b9ff; }
+
+        .array-display {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 10px 0;
+            padding: 15px;
+            background: #000;
+            border-radius: 6px;
+            border: 1px solid #333;
+            max-width: 680px;
+            flex-wrap: wrap;
+        }
+        .item {
+            background-color: #d63031;
+            color: white;
+            padding: 10px 14px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.2s;
+            border: 2px solid transparent;
+        }
+        .item:hover { background-color: #ff7675; }
+        .item.selected {
+            border: 2px solid #ffeaa7;
+            background-color: #e17055;
+            transform: scale(1.1);
+        }
+        .item.sorted-visual { background-color: #00b894; cursor: default; }
+
+        /* ENDING PAGE UI */
+        #ending-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            text-align: center;
+            animation: fadeIn 2s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .ending-title {
+            font-size: 42px;
+            color: #fdcb6e;
+            text-shadow: 0 0 10px rgba(253, 203, 110, 0.7);
+            margin-bottom: 10px;
+        }
+        .ending-subtitle {
+            font-size: 18px;
+            color: #a29bfe;
+            margin-bottom: 30px;
+        }
+        .credits-box {
+            background-color: #2d3436;
+            border: 2px solid #6c5ce7;
+            padding: 20px 40px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        .credits-label {
+            font-size: 14px;
+            color: #b2bec3;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        .author-name {
+            font-size: 26px;
+            color: #00b894;
+            font-weight: bold;
+        }
+
+        button {
+            background-color: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            font-size: 15px;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            align-self: flex-end;
+            transition: 0.2s;
+            margin-top: 15px;
+        }
+        button:hover { background-color: #a29bfe; }
+        #return-map-btn { display: none; align-self: center; }
+        .restart-btn { align-self: center; background-color: #00b894; }
+        .restart-btn:hover { background-color: #55efc4; }
+    </style>
+</head>
+<body>
+
+<div id="game-window">
+    <div id="scene-header">Kingdom of Arrayia</div>
+
+    <div id="overworld-container">
+        <div id="quest-banner">📜 Quest: Defeat Level 1 (Chaos Slime) to unlock the Magic Gate!</div>
+        <div id="grid"></div>
+    </div>
+
+    <div id="dialogue-container">
+        <div class="dialogue-box">
+            <img id="speaker-portrait" class="portrait-img" src="" alt="Speaker Portrait">
+            <div class="dialogue-content">
+                <div class="speaker-name" id="speaker-name">Name</div>
+                <div id="dialogue-text">Dialogue text...</div>
+            </div>
+        </div>
+        <button id="dialogue-btn" onclick="advanceDialogue()">Next >></button>
+    </div>
+
+    <div id="battle-container">
+        <div id="monster-sprite">👾</div>
+        <div id="combat-log">Choose a sorting spell!</div>
+        <div id="move-counter">⚡ Moves Remaining: 15</div>
+        
+        <div id="spell-menu">
+            <button class="spell-btn" onclick="castSpell('bubble')">Bubble Sort</button>
+            <button class="spell-btn" onclick="castSpell('selection')">Selection Sort</button>
+            <button class="spell-btn" onclick="castSpell('insertion')">Insertion Sort</button>
+        </div>
+
+        <div class="array-display" id="array-display"></div>
+        <button id="return-map-btn" onclick="returnToMap()">Return to World Map</button>
+    </div>
+
+    <div id="ending-container">
+        <div class="ending-title">🏆 VICTORY 🏆</div>
+        <div class="ending-subtitle">The Demon Lord is vanquished and Hell's Gate is sealed!</div>
+        
+        <div class="credits-box">
+            <div class="credits-label">A Game Created By</div>
+            <div class="author-name">Your Name / Creator</div>
+        </div>
+
+        <button class="restart-btn" onclick="location.reload()">Play Again 🔄</button>
+    </div>
+</div>
+
+<script>
+    // --- PORTRAITS ---
+    const characters = {
+        "Master Lin": "https://api.dicebear.com/7.x/avataaars/svg?seed=Gandalf&backgroundColor=b6e3f4",
+        "You": "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=c0aede",
+        "Guard Captain": "https://api.dicebear.com/7.x/avataaars/svg?seed=Arthur&backgroundColor=ffdfbf",
+        "Demon Lord": "https://api.dicebear.com/7.x/bottts/svg?seed=DemonLord&backgroundColor=d63031",
+        "System": "https://api.dicebear.com/7.x/bottts/svg?seed=Robot&backgroundColor=000000"
+    };
+
+    // --- STORY DIALOGUES ---
+    const hellGateDialogue = [
+        { speaker: "Master Lin", text: "Wait! A rift in space has ripped open! That portal leads straight to HELL!" },
+        { speaker: "You", text: "The sinister energy coming from it is overwhelming... the Demon Lord of Entropy must be inside!" },
+        { speaker: "Guard Captain", text: "Be careful! Legend says the Demon Lord limits your spellcasting steps!" },
+        { speaker: "Master Lin", text: "If you exceed your allowed moves, he will reshuffle the entire array! Stay sharp!" }
+    ];
+
+    const endingDialogue = [
+        { speaker: "Demon Lord", text: "NOOO! My chaos arrays... perfectly ordered?! IMPOSSIBLE!" },
+        { speaker: "Master Lin", text: "Incredible work, Grand Algomancer! The Hell Gate is collapsing!" },
+        { speaker: "You", text: "Order has been restored to Arrayia once and for all!" },
+        { speaker: "Master Lin", text: "You have conquered all challenges and saved the entire kingdom!" }
+    ];
+
+    // --- MAP LAYOUT (10x10) ---
+    const mapLayout = [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Row 0
+        [1, 0, 0, 0, 1, 1, 1, 1, 1, 1], // Row 1 (Start at 1,1)
+        [1, 0, 2, 2, 1, 1, 1, 1, 1, 1], // Row 2 (Mob 1 at 3,2)
+        [1, 0, 2, 0, 0, 0, 0, 0, 0, 1], // Row 3 (Gate 1 at 4,3)
+        [1, 1, 1, 1, 1, 1, 1, 1, 0, 1], // Row 4
+        [1, 1, 1, 1, 1, 1, 1, 1, 0, 1], // Row 5
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1], // Row 6 (Mob 2 at 4,6)
+        [1, 0, 1, 1, 1, 1, 1, 1, 1, 1], // Row 7 (Gate 2 at 1,7)
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1], // Row 8 (Mob 3 at 3,8, Gate 3 at 5,8, Mob 4 at 7,8, Hell Gate at 8,8)
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  // Row 9
+    ];
+
+    let questProgress = 0; // 0: Mob 1, 1: Mob 2, 2: Mob 3, 3: Mob 4, 4: Hell Gate Unlocked, 5: Finished
+    let playerPos = { x: 1, y: 1 };
+
+    const gates = {
+        "4,3": { requiredLevel: 1, name: "Woods Gate", bossName: "Monster 1 (Chaos Slime)" },
+        "1,7": { requiredLevel: 2, name: "Castle Gate", bossName: "Monster 2 (Golem of Disorder)" },
+        "5,8": { requiredLevel: 3, name: "Abyssal Gate", bossName: "Monster 3 (Rogue Crystal)" }
+    };
+
+    const entities = {
+        "3,2": {
+            id: 0,
+            sprite: "🦠",
+            monsterName: "Chaos Slime (Level 1)",
+            dialogue: [
+                { speaker: "Master Lin", text: "Watch out! A Chaos Slime blockades the forest path!" },
+                { speaker: "You", text: "Its energy nodes are completely mixed up!" },
+                { speaker: "Master Lin", text: "Cast BUBBLE SORT! Swap adjacent touching nodes until they are sorted!" }
+            ],
+            array: [8, 3, 5, 1, 9],
+            rule: "adjacent",
+            weakness: "bubble"
+        },
+        "4,6": {
+            id: 1,
+            sprite: "🪨",
+            monsterName: "Golem of Disorder (Level 2)",
+            dialogue: [
+                { speaker: "Guard Captain", text: "Halt! A Golem of Disorder guards the Castle Courtyard!" },
+                { speaker: "You", text: "Its heavy armor is weak to targeted extraction!" },
+                { speaker: "Guard Captain", text: "Use SELECTION SORT! Find the smallest stone and swap it to the front!" }
+            ],
+            array: [45, 12, 88, 23, 76],
+            rule: "any",
+            weakness: "selection"
+        },
+        "3,8": {
+            id: 2,
+            sprite: "💎",
+            monsterName: "Rogue Crystal (Level 3)",
+            dialogue: [
+                { speaker: "Master Lin", text: "An unstable crystal formation threatens the abyss!" },
+                { speaker: "Master Lin", text: "Cast INSERTION SORT to slide the rogue crystal into place!" }
+            ],
+            array: [20, 25, 30, 40, 14],
+            rule: "adjacent",
+            weakness: "insertion"
+        },
+        "7,8": {
+            id: 3,
+            sprite: "🧙‍♂️",
+            monsterName: "Void Archmage (Act IV Warden)",
+            dialogue: [
+                { speaker: "Guard Captain", text: "BEWARE! The Void Archmage stands before Hell Gate!" },
+                { speaker: "You", text: "He commands an array of high-density void particles!" },
+                { speaker: "Master Lin", text: "He shifts quickly! Extract the lowest numbers with SELECTION SORT to shatter his aura!" }
+            ],
+            array: [92, 15, 63, 7, 41, 84],
+            rule: "any",
+            weakness: "selection"
+        }
+    };
+
+    // --- 3-PHASE BOSS DATA ---
+    const bossPhases = [
+        {
+            phase: 1,
+            sprite: "👹",
+            monsterName: "Demon Lord Phase I: Swarm Form",
+            dialogue: [
+                { speaker: "Demon Lord", text: "Foolish mortal! You dare enter Hell itself?!" },
+                { speaker: "Master Lin", text: "Use BUBBLE SORT! Swap adjacent nodes, but watch your step limit!" }
+            ],
+            array: [14, 5, 22, 1, 9, 18, 3], // 7 nodes
+            rule: "adjacent",
+            weakness: "bubble",
+            maxMoves: 16
+        },
+        {
+            phase: 2,
+            sprite: "👿",
+            monsterName: "Demon Lord Phase II: Singularity Form",
+            dialogue: [
+                { speaker: "Demon Lord", text: "Impressive... but can you extract order from extreme entropy?!" },
+                { speaker: "Guard Captain", text: "He changed forms! Use SELECTION SORT to swap any two nodes!" }
+            ],
+            array: [88, 12, 45, 3, 67, 21, 9], // 7 nodes
+            rule: "any",
+            weakness: "selection",
+            maxMoves: 10
+        },
+        {
+            phase: 3,
+            sprite: "🐲",
+            monsterName: "Demon Lord Phase III: True Form (Final)",
+            dialogue: [
+                { speaker: "Demon Lord", text: "IMPOSSIBLE! Witness my true power! Suffer endless chaos!" },
+                { speaker: "Master Lin", text: "This is it! Use INSERTION SORT with perfection to seal him forever!" }
+            ],
+            array: [30, 40, 20, 50, 10, 60, 5, 25], // 8 nodes
+            rule: "adjacent",
+            weakness: "insertion",
+            maxMoves: 18
+        }
+    ];
+
+    // --- DOM ELEMENTS ---
+    const gridEl = document.getElementById('grid');
+    const overworldContainer = document.getElementById('overworld-container');
+    const dialogueContainer = document.getElementById('dialogue-container');
+    const battleContainer = document.getElementById('battle-container');
+    const endingContainer = document.getElementById('ending-container');
+    const sceneHeader = document.getElementById('scene-header');
+    const questBanner = document.getElementById('quest-banner');
+
+    const speakerPortrait = document.getElementById('speaker-portrait');
+    const speakerName = document.getElementById('speaker-name');
+    const dialogueText = document.getElementById('dialogue-text');
+
+    const monsterSprite = document.getElementById('monster-sprite');
+    const combatLog = document.getElementById('combat-log');
+    const moveCounter = document.getElementById('move-counter');
+    const spellMenu = document.getElementById('spell-menu');
+    const arrayDisplay = document.getElementById('array-display');
+    const returnMapBtn = document.getElementById('return-map-btn');
+
+    // State Variables
+    let currentEncounter = null;
+    let dialogueIndex = 0;
+    let currentDialogueSet = [];
+    let currentArray = [];
+    let selectedIndex = null;
+    let battleComplete = false;
+    let spellActive = false;
+    let inBattleOrDialogue = false;
+
+    let isBossFight = false;
+    let currentBossPhaseIdx = 0;
+    let movesLeft = 0;
+
+    // --- CHEAT CODE TRACKER ---
+    let cheatBuffer = "";
+    const cheatCode = "wwads";
+
+    // --- MAP RENDERING & MOVEMENT ---
+    function renderMap() {
+        gridEl.innerHTML = '';
+        for (let r = 0; r < 10; r++) {
+            for (let c = 0; c < 10; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+
+                if (mapLayout[r][c] === 1) cell.classList.add('tree');
+                else if (mapLayout[r][c] === 2) cell.classList.add('path');
+
+                const entityKey = `${c},${r}`;
+
+                if (playerPos.x === c && playerPos.y === r) {
+                    cell.innerText = "🧙‍♂️";
+                } else if (gates[entityKey]) {
+                    const gate = gates[entityKey];
+                    if (questProgress < gate.requiredLevel) {
+                        cell.classList.add('gate');
+                        cell.innerText = "🔒";
+                    } else {
+                        cell.classList.add('unlocked-gate');
+                        cell.innerText = "🔓";
+                    }
+                } else if (questProgress >= 4 && entityKey === "8,8") {
+                    // Render Hell Gate after 4 mobs killed
+                    cell.classList.add('hell-gate');
+                    cell.innerText = "🔴";
+                } else if (entities[entityKey] && !entities[entityKey].defeated) {
+                    cell.innerText = entities[entityKey].sprite;
+                } else if (mapLayout[r][c] === 1) {
+                    cell.innerText = "🌲";
+                }
+
+                gridEl.appendChild(cell);
+            }
+        }
+        updateQuestBanner();
+    }
+
+    function updateQuestBanner() {
+        if (questProgress === 0) {
+            questBanner.innerText = "📜 Act I: Defeat Level 1 (Chaos Slime) to open Woods Gate (🔒)!";
+        } else if (questProgress === 1) {
+            questBanner.innerText = "📜 Act II: Pass Woods Gate (🔓) & defeat Level 2 (Golem of Disorder)!";
+        } else if (questProgress === 2) {
+            questBanner.innerText = "📜 Act III: Pass Castle Gate (🔓) & defeat Level 3 (Rogue Crystal)!";
+        } else if (questProgress === 3) {
+            questBanner.innerText = "📜 Act IV: Pass Abyssal Gate (🔓) & defeat Level 4 (Void Archmage)!";
+        } else if (questProgress === 4) {
+            questBanner.innerText = "🔥 Final Act: Enter Hell Gate (🔴 at bottom-right) to fight the Demon Lord!";
+        }
+    }
+
+    window.addEventListener('keydown', (e) => {
+        // CHEAT CODE CHECK: "wwads" inside any active battle
+        if (battleContainer.style.display === "flex" && !battleComplete) {
+            const key = e.key.toLowerCase();
+            if (["w", "a", "s", "d"].includes(key)) {
+                cheatBuffer += key;
+                if (cheatBuffer.length > cheatCode.length) {
+                    cheatBuffer = cheatBuffer.slice(-cheatCode.length);
+                }
+                if (cheatBuffer === cheatCode) {
+                    cheatBuffer = "";
+                    spellActive = true;
+                    currentArray.sort((a, b) => a - b);
+                    spellMenu.style.display = "none";
+                    arrayDisplay.style.opacity = "1";
+                    combatLog.innerText = "⚡ CHEAT ACTIVATED! Instant Win!";
+                    combatLog.style.color = "#fdcb6e";
+                    checkWinCondition();
+                    return;
+                }
+            }
+        }
+
+        if (inBattleOrDialogue) return;
+
+        let newX = playerPos.x;
+        let newY = playerPos.y;
+
+        if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') newY--;
+        if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') newY++;
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') newX--;
+        if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') newX++;
+
+        const targetKey = `${newX},${newY}`;
+
+        if (mapLayout[newY] && mapLayout[newY][newX] === 1) return;
+
+        if (gates[targetKey]) {
+            const gate = gates[targetKey];
+            if (questProgress < gate.requiredLevel) {
+                alert(`🔒 The ${gate.name} is sealed by Chaos Magic! You must defeat ${gate.bossName} first!`);
+                return;
+            }
+        }
+
+        if (mapLayout[newY]) {
+            playerPos.x = newX;
+            playerPos.y = newY;
+            renderMap();
+            checkTrigger(newX, newY);
+        }
+    });
+
+    function checkTrigger(x, y) {
+        const entityKey = `${x},${y}`;
+        
+        // Check Standard Monsters
+        if (entities[entityKey] && !entities[entityKey].defeated) {
+            inBattleOrDialogue = true;
+            isBossFight = false;
+            currentEncounter = entities[entityKey];
+            startDialogueSequence(currentEncounter.dialogue, `Encounter: ${currentEncounter.monsterName}`, () => {
+                startBattle();
+            });
+        } 
+        // Check Hell Gate Trigger
+        else if (questProgress >= 4 && entityKey === "8,8") {
+            inBattleOrDialogue = true;
+            isBossFight = true;
+            currentBossPhaseIdx = 0;
+            startDialogueSequence(hellGateDialogue, "Portal to Hell", () => {
+                startBossPhase(0);
+            });
+        }
+    }
+
+    // --- DIALOGUE SYSTEM ---
+    let onDialogueCompleteCallback = null;
+
+    function startDialogueSequence(dialogueArray, title, onComplete) {
+        sceneHeader.innerText = title;
+        overworldContainer.style.display = "none";
+        battleContainer.style.display = "none";
+        dialogueContainer.style.display = "flex";
+        
+        currentDialogueSet = dialogueArray;
+        dialogueIndex = 0;
+        onDialogueCompleteCallback = onComplete;
+        showDialogue();
+    }
+
+    function showDialogue() {
+        const line = currentDialogueSet[dialogueIndex];
+        speakerName.innerText = line.speaker;
+        dialogueText.innerText = line.text;
+        speakerPortrait.src = characters[line.speaker] || characters["System"];
+    }
+
+    function advanceDialogue() {
+        dialogueIndex++;
+        if (dialogueIndex < currentDialogueSet.length) {
+            showDialogue();
+        } else {
+            if (onDialogueCompleteCallback) onDialogueCompleteCallback();
+        }
+    }
+
+    // --- BATTLE SYSTEM ---
+    function startBattle() {
+        dialogueContainer.style.display = "none";
+        battleContainer.style.display = "flex";
+        
+        monsterSprite.innerText = currentEncounter.sprite;
+        combatLog.innerText = `Wild ${currentEncounter.monsterName} attacks! Choose a spell!`;
+        combatLog.style.color = "#ffeaa7";
+        moveCounter.style.display = "none";
+
+        currentArray = [...currentEncounter.array];
+        selectedIndex = null;
+        battleComplete = false;
+        spellActive = false;
+        cheatBuffer = "";
+
+        spellMenu.style.display = "flex";
+        arrayDisplay.style.opacity = "0.3";
+        returnMapBtn.style.display = "none";
+
+        renderArray();
+    }
+
+    function startBossPhase(phaseIdx) {
+        currentBossPhaseIdx = phaseIdx;
+        currentEncounter = bossPhases[phaseIdx];
+        
+        startDialogueSequence(currentEncounter.dialogue, currentEncounter.monsterName, () => {
+            dialogueContainer.style.display = "none";
+            battleContainer.style.display = "flex";
+
+            sceneHeader.innerText = `BOSS FIGHT: Phase ${phaseIdx + 1} of 3`;
+            monsterSprite.innerText = currentEncounter.sprite;
+            combatLog.innerText = `${currentEncounter.monsterName}! Choose the correct spell!`;
+            combatLog.style.color = "#ffeaa7";
+
+            movesLeft = currentEncounter.maxMoves;
+            moveCounter.innerText = `⚡ Moves Remaining: ${movesLeft} / ${currentEncounter.maxMoves}`;
+            moveCounter.style.display = "block";
+
+            currentArray = [...currentEncounter.array];
+            selectedIndex = null;
+            battleComplete = false;
+            spellActive = false;
+            cheatBuffer = "";
+
+            spellMenu.style.display = "flex";
+            arrayDisplay.style.opacity = "0.3";
+            returnMapBtn.style.display = "none";
+
+            renderArray();
+        });
+    }
+
+    function castSpell(selectedSpell) {
+        if (selectedSpell === currentEncounter.weakness) {
+            spellActive = true;
+            spellMenu.style.display = "none";
+            arrayDisplay.style.opacity = "1";
+            combatLog.innerText = `Weakness hit! Sort array using ${selectedSpell.toUpperCase()} rules!`;
+            combatLog.style.color = "#00b894";
+        } else {
+            combatLog.innerText = `Resisted! The target is immune to that spell!`;
+            combatLog.style.color = "#ff7675";
+        }
+    }
+
+    function renderArray() {
+        arrayDisplay.innerHTML = '';
+        currentArray.forEach((val, index) => {
+            const el = document.createElement('div');
+            el.className = 'item';
+            if (selectedIndex === index) el.classList.add('selected');
+            if (battleComplete) el.classList.add('sorted-visual');
+            el.innerText = val;
+            
+            if (!battleComplete) {
+                el.onclick = () => handleItemClick(index);
+            }
+            arrayDisplay.appendChild(el);
+        });
+    }
+
+    function handleItemClick(index) {
+        if (!spellActive) {
+            combatLog.innerText = "Select the effective spell from the menu first!";
+            combatLog.style.color = "#ff7675";
+            return;
+        }
+
+        if (selectedIndex === null) {
+            selectedIndex = index;
+            renderArray();
+            return;
+        }
+
+        if (selectedIndex === index) {
+            selectedIndex = null;
+            renderArray();
+            return;
+        }
+
+        if (currentEncounter.rule === "adjacent" && Math.abs(selectedIndex - index) !== 1) {
+            combatLog.innerText = "Rule Violation: You can only swap ADJACENT nodes!";
+            combatLog.style.color = "#ff7675";
+            selectedIndex = null;
+            renderArray();
+            return;
+        }
+
+        // Perform Swap
+        let temp = currentArray[selectedIndex];
+        currentArray[selectedIndex] = currentArray[index];
+        currentArray[index] = temp;
+        selectedIndex = null;
+
+        // Boss Move Counter Logic
+        if (isBossFight) {
+            movesLeft--;
+            moveCounter.innerText = `⚡ Moves Remaining: ${movesLeft} / ${currentEncounter.maxMoves}`;
+        }
+
+        renderArray();
+        checkWinCondition();
+    }
+
+    function checkWinCondition() {
+        let isSorted = true;
+        for (let i = 0; i < currentArray.length - 1; i++) {
+            if (currentArray[i] > currentArray[i + 1]) {
+                isSorted = false;
+                break;
+            }
+        }
+
+        // VICTORY CONDITION
+        if (isSorted) {
+            battleComplete = true;
+
+            if (isBossFight) {
+                if (currentBossPhaseIdx < 2) {
+                    combatLog.innerText = `PHASE ${currentBossPhaseIdx + 1} CLEARED! Transcending to next phase...`;
+                    combatLog.style.color = "#00b894";
+                    returnMapBtn.innerText = "Next Phase >>";
+                } else {
+                    combatLog.innerText = `DEMON LORD VANQUISHED! Hell Gate Destroyed!`;
+                    combatLog.style.color = "#00b894";
+                    returnMapBtn.innerText = "Claim Victory >>";
+                }
+            } else {
+                currentEncounter.defeated = true;
+                questProgress = Math.max(questProgress, currentEncounter.id + 1);
+                combatLog.innerText = `VICTORY! ${currentEncounter.monsterName} defeated!`;
+                combatLog.style.color = "#00b894";
+                returnMapBtn.innerText = "Return to World Map";
+            }
+
+            renderArray();
+            returnMapBtn.style.display = "block";
+            return;
+        }
+
+        // BOSS FAIL (OUT OF MOVES) CONDITION
+        if (isBossFight && movesLeft <= 0) {
+            combatLog.innerText = "⚠️ OUT OF MOVES! The Demon Lord reshuffles the array!";
+            combatLog.style.color = "#ff7675";
+            
+            // Reset Boss Array & Moves
+            setTimeout(() => {
+                currentArray = [...currentEncounter.array];
+                movesLeft = currentEncounter.maxMoves;
+                moveCounter.innerText = `⚡ Moves Remaining: ${movesLeft} / ${currentEncounter.maxMoves}`;
+                combatLog.innerText = "Array Reshuffled! Try again!";
+                renderArray();
+            }, 1200);
+        }
+    }
+
+    function returnToMap() {
+        battleContainer.style.display = "none";
+
+        if (isBossFight) {
+            if (currentBossPhaseIdx < 2) {
+                // Advance to next boss phase
+                startBossPhase(currentBossPhaseIdx + 1);
+            } else {
+                // Boss Defeated -> Trigger Grand Ending
+                startEndingSequence();
+            }
+        } else {
+            overworldContainer.style.display = "flex";
+            sceneHeader.innerText = "Kingdom of Arrayia";
+            inBattleOrDialogue = false;
+            renderMap();
+        }
+    }
+
+    // --- GRAND ENDING SEQUENCE ---
+    function startEndingSequence() {
+        startDialogueSequence(endingDialogue, "The Sealed Hell Gate", () => {
+            dialogueContainer.style.display = "none";
+            sceneHeader.innerText = "Epilogue";
+            endingContainer.style.display = "flex";
+        });
+    }
+
+    // Initialize Game
+    renderMap();
+
+</script>
+
+</body>
+</html>
