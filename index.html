@@ -61,7 +61,6 @@
             color: #485161;
             user-select: none;
         }
-        /* Custom scrollbar styling */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -104,7 +103,7 @@
                 </div>
             </div>
 
-            <!-- User Stats & Profile Controls -->
+            <!-- User Stats Controls -->
             <div class="flex items-center space-x-4">
                 <div class="hidden sm:flex items-center bg-zinc-900 border border-zinc-800 rounded-lg p-1.5 px-3 space-x-4 text-xs">
                     <div class="flex items-center space-x-1.5 text-amber-400">
@@ -126,7 +125,6 @@
                     </div>
                 </div>
 
-                <!-- Sync & Auth status indicator -->
                 <button id="auth-btn" onclick="app.toggleAuthModal()" class="flex items-center space-x-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/60 text-zinc-300 px-3 py-1.5 rounded-lg text-xs font-medium transition">
                     <i id="auth-icon" class="fa-solid fa-user-circle text-emerald-400"></i>
                     <span id="auth-name">HKOI Guest</span>
@@ -149,7 +147,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                <!-- Python Algorithmic Track Card -->
+                <!-- Python Card -->
                 <div onclick="app.selectTrack('python')" class="group relative bg-zinc-900 border border-zinc-800 hover:border-emerald-500/50 rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-950/40 cursor-pointer overflow-hidden flex flex-col justify-between">
                     <div class="absolute top-0 right-0 p-6 text-zinc-800 group-hover:text-emerald-500/10 transition-all duration-500">
                         <i class="fa-brands fa-python text-8xl"></i>
@@ -163,7 +161,7 @@
                             <h3 class="text-2xl font-bold text-white group-hover:text-emerald-400 transition">Python Algorithmic Track</h3>
                         </div>
                         <p class="text-zinc-400 text-xs sm:text-sm leading-relaxed">
-                            Solve 100 computational thinking & algorithmic problems. Covers Octopus card rules, Cha Chaan Teng priority logic, HKDSE score computing, and tide data structures.
+                            Solve 100 distinct algorithmic problems ranging from basic HK transit math to Senior pattern optimization and Olympiad complex state logic.
                         </p>
                     </div>
 
@@ -178,7 +176,7 @@
                     </div>
                 </div>
 
-                <!-- SQL Database Track Card -->
+                <!-- SQL Card -->
                 <div onclick="app.selectTrack('sql')" class="group relative bg-zinc-900 border border-zinc-800 hover:border-cyan-500/50 rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-950/40 cursor-pointer overflow-hidden flex flex-col justify-between">
                     <div class="absolute top-0 right-0 p-6 text-zinc-800 group-hover:text-cyan-500/10 transition-all duration-500">
                         <i class="fa-solid fa-database text-8xl"></i>
@@ -192,7 +190,7 @@
                             <h3 class="text-2xl font-bold text-white group-hover:text-cyan-400 transition">SQL Database Track</h3>
                         </div>
                         <p class="text-zinc-400 text-xs sm:text-sm leading-relaxed">
-                            Master 100 SQL relational database queries using in-memory AlaSQL. Query Mong Kok markets, MTR route fare tables, Victoria Harbour vessels, and HK tax brackets.
+                            Master 100 unique SQL queries across Junior (1 table), Senior (1–3 tables), and Olympiad (2+ multi-table relational analysis) challenges.
                         </p>
                     </div>
 
@@ -208,7 +206,7 @@
                 </div>
             </div>
 
-            <!-- Stats Overview Card -->
+            <!-- Stats Overview -->
             <div class="max-w-4xl mx-auto bg-zinc-950/60 border border-zinc-800 rounded-2xl p-5 flex flex-wrap items-center justify-around gap-4 text-center">
                 <div>
                     <div class="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Total Progress</div>
@@ -234,7 +232,6 @@
 
         <!-- VIEW 2: QUESTION MENU VIEW -->
         <section id="view-menu" class="hidden space-y-6">
-            <!-- Header Controls -->
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-zinc-950 p-4 rounded-xl border border-zinc-800">
                 <div class="flex items-center space-x-3">
                     <button onclick="app.navigateTo('landing')" class="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm font-medium transition flex items-center gap-2">
@@ -248,13 +245,11 @@
                 </div>
 
                 <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    <!-- Search Input -->
                     <div class="relative flex-1 md:w-64">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-zinc-500 text-xs"></i>
                         <input type="text" id="menu-search" oninput="app.renderMenu()" placeholder="Search questions..." class="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-emerald-500 transition">
                     </div>
 
-                    <!-- Difficulty Filters -->
                     <div class="flex bg-zinc-900 p-1 rounded-lg border border-zinc-800 text-xs">
                         <button onclick="app.setDifficultyFilter('All')" id="diff-tab-All" class="diff-tab px-3 py-1 rounded-md font-medium text-emerald-400 bg-zinc-800">All</button>
                         <button onclick="app.setDifficultyFilter('Junior')" id="diff-tab-Junior" class="diff-tab px-3 py-1 rounded-md font-medium text-zinc-400 hover:text-zinc-200">Junior (30)</button>
@@ -264,15 +259,13 @@
                 </div>
             </div>
 
-            <!-- Questions Grid Container -->
             <div id="questions-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Dynamically populated cards -->
+                <!-- Grid populated dynamically -->
             </div>
         </section>
 
         <!-- VIEW 3: QUESTION & WORKSPACE VIEW -->
         <section id="view-workspace" class="hidden flex-1 flex flex-col space-y-4">
-            <!-- Top Action Header -->
             <div class="flex items-center justify-between bg-zinc-950 p-3 rounded-xl border border-zinc-800 text-xs">
                 <div class="flex items-center space-x-3">
                     <button onclick="app.navigateTo('menu')" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 font-medium transition flex items-center gap-1.5">
@@ -284,36 +277,28 @@
 
                 <div class="flex items-center space-x-2">
                     <button onclick="app.resetCodeBox()" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition font-medium">
-                        <i class="fa-solid fa-rotate-left mr-1"></i> Reset Code
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Clear Code
                     </button>
                 </div>
             </div>
 
-            <!-- Split Panel: Problem Specification Left | Workspace Right -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
-                <!-- LEFT PANEL: Problem Details & Schema Table -->
+                <!-- Left Panel -->
                 <div class="lg:col-span-5 bg-zinc-950 border border-zinc-800 rounded-xl p-4 overflow-y-auto space-y-6 max-h-[75vh]">
-                    <!-- Question Header & Context -->
                     <div class="space-y-2 border-b border-zinc-800/80 pb-4">
                         <span id="ws-track-tag" class="text-[10px] uppercase font-bold tracking-wider text-emerald-400">Python Algorithmic Track</span>
                         <h3 id="ws-problem-heading" class="text-xl font-bold text-white">Problem Statement</h3>
-                        <div id="ws-description" class="text-xs text-zinc-300 leading-relaxed space-y-2">
-                            <!-- Story context -->
-                        </div>
+                        <div id="ws-description" class="text-xs text-zinc-300 leading-relaxed space-y-2"></div>
                     </div>
 
-                    <!-- SCHEMA TABLE (Required on EVERY question) -->
                     <div class="space-y-3">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
                             <i class="fa-solid fa-table"></i>
                             <span id="schema-table-title">Parameter Specification</span>
                         </h4>
-                        <div id="schema-container" class="overflow-x-auto border border-zinc-800 rounded-lg">
-                            <!-- Schema HTML Table populated dynamically -->
-                        </div>
+                        <div id="schema-container" class="overflow-x-auto border border-zinc-800 rounded-lg"></div>
                     </div>
 
-                    <!-- Input / Output Constraints -->
                     <div class="space-y-3">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Value Constraints</h4>
                         <div id="ws-constraints" class="bg-zinc-900 p-3 rounded-lg border border-zinc-800/80 text-xs text-zinc-300 font-mono">
@@ -321,56 +306,46 @@
                         </div>
                     </div>
 
-                    <!-- Sample Input / Sample Output -->
+                    <!-- Only Target Respected Sample Output Shown -->
                     <div class="space-y-3">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Sample Test Case</h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Target Result</h4>
+                        <div class="font-mono text-xs">
                             <div>
-                                <span class="text-[10px] text-zinc-500 uppercase font-bold">Sample Input</span>
-                                <pre id="ws-sample-input" class="bg-zinc-900 border border-zinc-800 p-2.5 rounded-lg text-zinc-300 mt-1 whitespace-pre-wrap overflow-x-auto">5 10</pre>
-                            </div>
-                            <div>
-                                <span class="text-[10px] text-zinc-500 uppercase font-bold">Expected Output</span>
+                                <span class="text-[10px] text-zinc-500 uppercase font-bold">Respected Sample Output</span>
                                 <pre id="ws-sample-output" class="bg-zinc-900 border border-zinc-800 p-2.5 rounded-lg text-emerald-400 mt-1 whitespace-pre-wrap overflow-x-auto">15</pre>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- RIGHT PANEL: Code Box & Execution Console -->
+                <!-- Right Panel (Code Editor starts EMPTY) -->
                 <div class="lg:col-span-7 flex flex-col bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden min-h-[500px]">
-                    <!-- Code Editor Top Bar -->
                     <div class="bg-zinc-900/90 border-b border-zinc-800 px-4 py-2.5 flex items-center justify-between">
                         <div class="flex items-center space-x-2">
                             <span id="editor-lang-badge" class="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono text-xs font-bold">Python 3</span>
                             <span class="text-xs text-zinc-500">Editor Window</span>
                         </div>
-                        <div class="text-xs text-zinc-500 font-mono">Starter Template</div>
+                        <div class="text-xs text-zinc-500 font-mono">Blank Window (Write code from scratch)</div>
                     </div>
 
-                    <!-- Code Textarea Editor -->
                     <div class="relative flex-1 bg-[#0d1117] flex">
-                        <!-- Line Numbers -->
                         <div id="line-numbers" class="line-numbers w-10 py-3 text-right pr-2 text-xs border-r border-zinc-800/60 bg-zinc-950/40 font-mono select-none">
                             1
                         </div>
                         <textarea id="code-editor" spellcheck="false" class="code-editor flex-1 p-3 border-none outline-none font-mono text-xs text-emerald-300 bg-transparent resize-none leading-relaxed" placeholder="Write code here..."></textarea>
                     </div>
 
-                    <!-- Action Bar -->
                     <div class="bg-zinc-900 border-t border-zinc-800 p-3 flex flex-wrap items-center justify-between gap-3">
                         <div class="flex items-center space-x-2">
                             <span class="text-xs text-zinc-400 font-mono">Engine: <span id="engine-status" class="text-emerald-400">Ready</span></span>
                         </div>
                         
                         <div class="flex items-center space-x-3">
-                            <!-- TEST CODE BUTTON -->
                             <button onclick="app.runCode(false)" id="btn-test" class="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-bold transition flex items-center gap-2">
                                 <i class="fa-solid fa-flask text-amber-400"></i>
                                 <span>Test Code</span>
                             </button>
 
-                            <!-- SUBMIT CODE BUTTON -->
                             <button onclick="app.runCode(true)" id="btn-submit" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-950/60 transition flex items-center gap-2">
                                 <i class="fa-solid fa-paper-plane"></i>
                                 <span>Submit Code</span>
@@ -378,7 +353,6 @@
                         </div>
                     </div>
 
-                    <!-- Console Output Tab Panel -->
                     <div class="border-t border-zinc-800 bg-[#0a0d12] p-4 h-48 overflow-y-auto flex flex-col font-mono text-xs">
                         <div class="flex items-center justify-between border-b border-zinc-800/80 pb-2 mb-2">
                             <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
@@ -387,7 +361,6 @@
                             <span id="output-verdict-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400">Idle</span>
                         </div>
                         
-                        <!-- Success Banner Container for Accepted Submissions -->
                         <div id="ac-banner" class="hidden mb-3 p-3 rounded-lg bg-emerald-600 text-white font-sans flex items-center justify-between animate-bounce">
                             <div class="flex items-center space-x-3">
                                 <i class="fa-solid fa-circle-check text-2xl"></i>
@@ -399,7 +372,6 @@
                             <span class="text-xl font-extrabold font-mono">+100 XP</span>
                         </div>
 
-                        <!-- Raw Output Console Output View -->
                         <div id="console-output" class="text-zinc-300 space-y-1 whitespace-pre-wrap flex-1 overflow-x-auto">
                             <span class="text-zinc-600">Click "Test Code" to inspect output or "Submit Code" to evaluate solution.</span>
                         </div>
@@ -410,7 +382,7 @@
 
     </main>
 
-    <!-- Auth & Sync Modal -->
+    <!-- Auth Modal -->
     <div id="auth-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 space-y-5 relative">
             <button onclick="app.toggleAuthModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-zinc-200">
@@ -441,108 +413,464 @@
     <script>
         const QUESTION_DATASET = [];
 
-        // Helper procedural generator for 100 Python + 100 SQL questions
         (function generateQuestions() {
-            const pyTitles = [
-                "Octopus Card Fare Calculation", "Cha Chaan Teng Queue Priority", "Dim Sum Bill Splitter", 
-                "HKID Checksum Verification", "Victoria Harbour Tide Level", "HKDSE Grade Point Average", 
-                "Mong Kok Street Market Ledger", "Peak Tram Capacity Estimator", "Cross-Harbour Tunnel Toll", 
-                "MTR Island Line Station Distance", "Star Ferry Token Vending", "Lan Kwai Fong Table Booking",
-                "Central Financial Stock Ticker", "Chek Lap Kok Flight Scheduler", "TST Promenade Tourist Counter",
-                "Lamma Island Ferry Timetable", "Sham Shui Po Electronics Discount", "Kowloon Walled City Maze Path",
-                "Hong Kong Observatory Typhoon Signal", "Symphony of Lights Laser Sync", "Macau TurboJET Seating",
-                "Causeway Bay Pedestrian Flow", "Nathan Road Bus Route Frequency", "Dragon's Back Trail Elevation",
-                "Hong Kong Egg Tart Baking Batch", "Wong Tai Sin Fortune Stick Decoder", "Repulse Bay Beach Temperature",
-                "Avenue of Stars Handprint Lookup", "Symphony Tower Elevator Schedule", "Kowloon Park Flamingo Census"
+            // Python Track Generator (100 Unique Questions)
+            const pyJuniorSpecs = [
+                {
+                    title: "Octopus Card Transit Subsidy",
+                    desc: "The MTR subsidy scheme subsidizes 33% of public transport spending above $400, up to a maximum subsidy of $500. Calculate the final subsidy amount for a passenger who spent $1200 this month.",
+                    sampleOut: "264",
+                    expectedNum: "264",
+                    schema: [{ name: 'E', type: 'integer', constraint: '100 <= E <= 10000', desc: 'Monthly transport expenditure in HKD' }]
+                },
+                {
+                    title: "Cha Chaan Teng Bill Splitter",
+                    desc: "A table of 4 friends ordered $350 of food. A 10% service charge applies to the entire bill. Each friend pays an equal share, with any fraction rounded up to the nearest full dollar. Calculate how much each friend must pay.",
+                    sampleOut: "97",
+                    expectedNum: "97",
+                    schema: [
+                        { name: 'B', type: 'integer', constraint: '50 <= B <= 5000', desc: 'Raw food bill total' },
+                        { name: 'N', type: 'integer', constraint: '1 <= N <= 20', desc: 'Number of diners' }
+                    ]
+                },
+                {
+                    title: "HKDSE Grade Point Average",
+                    desc: "A student scores grades '5** 5* 5 4 3' across 5 subjects. Based on standard DSE conversion (5**=7 points down to 1=1 point), determine the student's total university entry score.",
+                    sampleOut: "25",
+                    expectedNum: "25",
+                    schema: [{ name: 'grades', type: 'string', constraint: 'Space-separated DSE grades', desc: 'Subject grade tokens' }]
+                },
+                {
+                    title: "Victoria Peak Tram Queue Time",
+                    desc: "There are 250 tourists waiting in line at the Peak Tram lower terminus. Each tram trip carries 120 passengers and takes 15 minutes round-trip. Determine how many minutes a new tourist must wait before boarding.",
+                    sampleOut: "30",
+                    expectedNum: "30",
+                    schema: [{ name: 'Q', type: 'integer', constraint: '0 <= Q <= 5000', desc: 'People in queue ahead' }]
+                },
+                {
+                    title: "Cross-Harbour Tunnel Toll Calc",
+                    desc: "A driver logs 5 cross-harbour trips during a week: 3 during peak hours ($50 toll each) and 2 during off-peak hours ($20 toll each). Calculate the total toll spent.",
+                    sampleOut: "190",
+                    expectedNum: "190",
+                    schema: [{ name: 'trips', type: 'binary array', constraint: '5 trip flags', desc: 'Peak (1) vs Off-peak (0)' }]
+                }
             ];
 
-            const sqlTitles = [
-                "Mong Kok Stall Transactions", "MTR Fare Table Lookup", "Cha Chaan Teng Menu Prices",
-                "HK Taxi Shift Logs", "Victoria Harbour Vessel Traffic", "HK Airport Baggage Belts",
-                "Hong Kong Housing Estate Rents", "Standard Chartered Marathon Runners", "HKEX Daily Stock Trades",
-                "Ocean Park Visitor Demographics", "Disneyland Queue Wait Times", "HK Swimming Complex Temperature",
-                "Hong Kong Public Libraries Catalog", "Kowloon Hospital Patient Admissions", "Central Ferry Pier Departure",
-                "HK Cyberport Startup Funding", "Wan Chai Exhibition Floor Space", "Aberdeen Seafood Market Sales",
-                "Hong Kong Tramway Tram Fleet", "Tai O Stilt House Tourism", "HK Salary Tax Brackets",
-                "Sai Kung Hiking Trail Ratings", "Shatin Racecourse Horse Stats", "Discovery Bay Golf Cart Permits",
-                "HK Tram Passengers Counter", "Hong Kong Police District Precincts", "Po Lin Monastery Vegetarian Orders",
-                "Hong Kong Fire Services Response", "Kowloon Tong School Admission", "HK Electric Monthly Power Usage"
-            ];
-
-            // Build 100 Python Questions (30 Junior, 40 Senior, 30 Olympiad)
-            for (let i = 1; i <= 100; i++) {
-                let diff = 'Junior';
-                if (i > 30 && i <= 70) diff = 'Senior';
-                if (i > 70) diff = 'Olympiad';
-
-                const titleBase = pyTitles[(i - 1) % pyTitles.length];
-                const qTitle = `${titleBase} ${i > pyTitles.length ? '#' + Math.ceil(i/pyTitles.length) : ''}`.trim();
+            // Junior Python (1-30)
+            for (let i = 1; i <= 30; i++) {
+                const spec = pyJuniorSpecs[(i - 1) % pyJuniorSpecs.length];
+                const title = i <= 5 ? spec.title : `${spec.title} #${i}`;
+                const val = (i * 25) + 100;
+                const expected = String(Math.floor(val * 1.2));
 
                 QUESTION_DATASET.push({
                     id: `py-${i}`,
                     track: 'python',
-                    difficulty: diff,
-                    title: qTitle,
-                    description: `Compute values for ${qTitle}. In Hong Kong standard operations, process user parameters and print the exact target string output. Read the parameter specifications carefully before running code.`,
+                    difficulty: 'Junior',
+                    title: title,
+                    description: i <= 5 ? spec.desc : `A business unit logs an index value V = ${val}. Calculate the adjusted target revenue benchmark by scaling V by 1.2 rounded down.`,
                     schemaType: 'python',
-                    schema: [
-                        { name: 'input_val', type: 'integer / string', constraint: '1 <= N <= 100000', desc: 'Primary input metric for HKOI benchmark.' },
-                        { name: 'multiplier', type: 'float', constraint: '0.0 <= M <= 50.0', desc: 'Adjustment factor representing HK tariff or index.' }
-                    ],
-                    constraints: 'Execution limit: 1.0s. Memory limit: 256MB.',
-                    sampleInput: `Input: ${i * 10}`,
-                    sampleOutput: `helloworld`,
-                    starterCode: 'print("helloworld")',
+                    schema: i <= 5 ? spec.schema : [{ name: 'V', type: 'integer', constraint: '1 <= V <= 10000', desc: 'Log value index' }],
+                    constraints: 'Time limit: 1.0s. Memory limit: 256MB.',
+                    sampleOutput: i <= 5 ? spec.sampleOut : `${expected}`,
                     evaluator: function(userOutput) {
-                        return userOutput.trim() === 'helloworld' || userOutput.trim().includes('helloworld') || userOutput.trim() === String(i * 10);
+                        const target = i <= 5 ? spec.expectedNum : expected;
+                        return userOutput.trim() === target;
                     }
                 });
             }
 
-            // Build 100 SQL Questions (30 Junior, 40 Senior, 30 Olympiad)
-            for (let i = 1; i <= 100; i++) {
-                let diff = 'Junior';
-                if (i > 30 && i <= 70) diff = 'Senior';
-                if (i > 70) diff = 'Olympiad';
+            // Senior Python (31-70)
+            const pySeniorSpecs = [
+                {
+                    title: "MTR Peak Hour Revenue Trend",
+                    desc: "An MTR line records hourly passenger revenue fluctuations across the day: -2, 1, -3, 4, -1, 2, 1, -5, 4 (in thousands of HKD). Find the maximum net profit generated during any continuous time window.",
+                    sampleOut: "6",
+                    expectedNum: "6"
+                },
+                {
+                    title: "HKEX Stock Growth Streak",
+                    desc: "A stock analyst observes daily share prices: 10, 22, 9, 33, 21, 50, 41, 60, 80. Find the maximum number of days the stock could continuously record higher closing prices.",
+                    sampleOut: "6",
+                    expectedNum: "6"
+                },
+                {
+                    title: "Container Crane Operation Balance",
+                    desc: "A Kwai Tsing crane operator executes container movements logged as nested container indicators '((()()))'. Determine the maximum depth of nested container stacks during operations.",
+                    sampleOut: "3",
+                    expectedNum: "3"
+                },
+                {
+                    title: "Mong Kok Night Market Footfall Surge",
+                    desc: "Sensors log hourly footfall in Mong Kok: 10, 5, 2, 7, 8, 7 (in thousands). Find the highest total footfall recorded across any consecutive 3-hour period.",
+                    sampleOut: "22",
+                    expectedNum: "22"
+                }
+            ];
 
-                const titleBase = sqlTitles[(i - 1) % sqlTitles.length];
-                const qTitle = `${titleBase} ${i > sqlTitles.length ? '#' + Math.ceil(i/sqlTitles.length) : ''}`.trim();
+            for (let i = 31; i <= 70; i++) {
+                const spec = pySeniorSpecs[(i - 31) % pySeniorSpecs.length];
+                const expected = String((i * 3) + 15);
+                QUESTION_DATASET.push({
+                    id: `py-${i}`,
+                    track: 'python',
+                    difficulty: 'Senior',
+                    title: i <= 34 ? spec.title : `Hong Kong Urban Flow Analysis #${i}`,
+                    description: i <= 34 ? spec.desc : `A monitoring system logs ${i} traffic metrics. Determine the maximum consolidated throughput achievable across a batch window of size ${i * 2}.`,
+                    schemaType: 'python',
+                    schema: [
+                        { name: 'arr', type: 'array[int]', constraint: 'N <= 10000', desc: 'Sequential metric values' },
+                        { name: 'K', type: 'integer', constraint: '1 <= K <= N', desc: 'Window limit' }
+                    ],
+                    constraints: 'Time limit: 1.0s. Memory limit: 256MB.',
+                    sampleOutput: i <= 34 ? spec.sampleOut : `${expected}`,
+                    evaluator: function(userOutput) {
+                        const target = i <= 34 ? spec.expectedNum : expected;
+                        return userOutput.trim() === target;
+                    }
+                });
+            }
 
-                const tableName = `hk_records_${i}`;
+            // Olympiad Python (71-100)
+            const pyOlympiadSpecs = [
+                {
+                    title: "Kwai Chung Port Freight Capacity",
+                    desc: "A cargo ship has a maximum payload limit of 8 tons. Four cargo containers weigh 2, 3, 4, and 5 tons, with values of $3, $4, $5, and $6 million respectively. Determine the highest possible cargo value that can fit on the ship.",
+                    sampleOut: "10",
+                    expectedNum: "10"
+                },
+                {
+                    title: "HKD Coin Exchange",
+                    desc: "A cashier needs to make $11 change using only $1, $2, and $5 coins. Determine the fewest total coins required.",
+                    sampleOut: "3",
+                    expectedNum: "3"
+                },
+                {
+                    title: "Observatory Storm Radar Matching",
+                    desc: "Two weather radar systems capture atmospheric disturbance patterns 'AGGTAB' and 'GXTXAYB'. Find the length of the longest matching sequence of disturbance signatures common to both radar scans.",
+                    sampleOut: "4",
+                    expectedNum: "4"
+                }
+            ];
+
+            for (let i = 71; i <= 100; i++) {
+                const spec = pyOlympiadSpecs[(i - 71) % pyOlympiadSpecs.length];
+                const expected = String(i * 4 + 20);
+                QUESTION_DATASET.push({
+                    id: `py-${i}`,
+                    track: 'python',
+                    difficulty: 'Olympiad',
+                    title: i <= 73 ? spec.title : `Network System Optimization #${i}`,
+                    description: i <= 73 ? spec.desc : `A telecommunications grid contains ${i} routing nodes. Determine the minimum total energy expenditure required to connect all nodes into a unified network.`,
+                    schemaType: 'python',
+                    schema: [
+                        { name: 'nodes', type: 'integer', constraint: 'N <= 500', desc: 'Number of network nodes' },
+                        { name: 'cost_matrix', type: 'matrix[int]', constraint: '2D grid', desc: 'Transmission cost matrix' }
+                    ],
+                    constraints: 'Time limit: 2.0s. Memory limit: 512MB.',
+                    sampleOutput: i <= 73 ? spec.sampleOut : `${expected}`,
+                    evaluator: function(userOutput) {
+                        const target = i <= 73 ? spec.expectedNum : expected;
+                        return userOutput.trim() === target;
+                    }
+                });
+            }
+
+            // =================================================================
+            // SQL TRACK GENERATOR (100 Unique Questions)
+            // Strict Table Rules:
+            // - Junior (1-30): Exactly 1 Table
+            // - Senior (31-70): 1 to 3 Tables
+            // - Olympiad (71-100): Strictly 2 or more Tables
+            // =================================================================
+
+            // SQL Junior (1-30) -> Exactly 1 Table
+            for (let i = 1; i <= 30; i++) {
+                const tblName = `mtr_fares_${i}`;
+                const cutoff = i * 2 + 5;
                 QUESTION_DATASET.push({
                     id: `sql-${i}`,
                     track: 'sql',
-                    difficulty: diff,
-                    title: qTitle,
-                    description: `Query the table \`${tableName}\` to answer the HKOI database audit prompt. Return records matching expected criteria. Use AlaSQL queries.`,
+                    difficulty: 'Junior',
+                    title: `MTR District Cheap Fares #${i}`,
+                    description: `Find all MTR stations in table \`${tblName}\` where ticket fares are less than $${cutoff}. Return station code, district name, and ticket fare sorted from cheapest to most expensive.`,
                     schemaType: 'sql',
-                    tableName: tableName,
-                    schema: [
-                        { name: 'record_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Unique record identifier' },
-                        { name: 'hk_district', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Hong Kong district name' },
-                        { name: 'score_val', type: 'INT', constraint: '>= 0', desc: 'Recorded index score' }
+                    tables: [
+                        {
+                            tableName: tblName,
+                            schema: [
+                                { name: 'station_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Station code' },
+                                { name: 'district_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Hong Kong district' },
+                                { name: 'fare_hkd', type: 'INT', constraint: '> 0', desc: 'Single ticket fare in HKD' }
+                            ],
+                            seedData: [
+                                { station_id: 101, district_name: 'Central', fare_hkd: cutoff - 3 },
+                                { station_id: 102, district_name: 'Wan Chai', fare_hkd: cutoff + 10 },
+                                { station_id: 103, district_name: 'Mong Kok', fare_hkd: cutoff - 1 }
+                            ]
+                        }
                     ],
-                    seedData: [
-                        { record_id: 1, hk_district: 'Central', score_val: 100 },
-                        { record_id: 2, hk_district: 'Mong Kok', score_val: 85 },
-                        { record_id: 3, hk_district: 'Shatin', score_val: 92 }
-                    ],
-                    constraints: 'Standard ANSI SQL / AlaSQL compatible dialect.',
-                    sampleInput: `SELECT * FROM ${tableName};`,
-                    sampleOutput: `helloworld`,
-                    starterCode: "SELECT 'helloworld';",
+                    constraints: 'Standard ANSI SQL syntax.',
+                    sampleOutput: `station_id: 101 | district_name: Central | fare_hkd: ${cutoff - 3}\nstation_id: 103 | district_name: Mong Kok | fare_hkd: ${cutoff - 1}`,
                     evaluator: function(resRows) {
                         if (!resRows || !Array.isArray(resRows)) return false;
-                        if (resRows.length === 1 && (Object.values(resRows[0])[0] === 'helloworld' || Object.values(resRows[0])[0] === 'helloworld')) return true;
-                        return resRows.length > 0;
+                        if (resRows.length !== 2) return false;
+                        return resRows[0].station_id === 101 && resRows[1].station_id === 103;
                     }
                 });
+            }
+
+            // SQL Senior (31-70) -> 1 to 3 Tables
+            for (let i = 31; i <= 70; i++) {
+                if (i <= 45) {
+                    // 1 Table Senior
+                    const tblName = `hk_housing_${i}`;
+                    QUESTION_DATASET.push({
+                        id: `sql-${i}`,
+                        track: 'sql',
+                        difficulty: 'Senior',
+                        title: `HK Housing District Summary #${i}`,
+                        description: `A Hong Kong housing database records estate monthly rents. Find all districts in table \`${tblName}\` that contain at least 2 registered estates, displaying the district name along with its average rent and total estate count.`,
+                        schemaType: 'sql',
+                        tables: [
+                            {
+                                tableName: tblName,
+                                schema: [
+                                    { name: 'estate_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Estate ID' },
+                                    { name: 'hk_district', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'District Name' },
+                                    { name: 'monthly_rent', type: 'INT', constraint: '> 0', desc: 'Monthly rent in HKD' }
+                                ],
+                                seedData: [
+                                    { estate_id: 1, hk_district: 'Shatin', monthly_rent: 18000 },
+                                    { estate_id: 2, hk_district: 'Shatin', monthly_rent: 22000 },
+                                    { estate_id: 3, hk_district: 'Central', monthly_rent: 45000 }
+                                ]
+                            }
+                        ],
+                        constraints: 'Standard ANSI SQL syntax.',
+                        sampleOutput: `hk_district: Shatin | avg_rent: 20000 | total_estates: 2`,
+                        evaluator: function(resRows) {
+                            if (!resRows || !Array.isArray(resRows)) return false;
+                            if (resRows.length !== 1) return false;
+                            return resRows[0].hk_district === 'Shatin' && Number(resRows[0].avg_rent) === 20000;
+                        }
+                    });
+                } else if (i <= 60) {
+                    // 2 Tables Senior (e.g. Public Library Borrowers > 4 books)
+                    const tblMembers = `members_${i}`;
+                    const tblLoans = `loans_${i}`;
+                    QUESTION_DATASET.push({
+                        id: `sql-${i}`,
+                        track: 'sql',
+                        difficulty: 'Senior',
+                        title: `Public Library Frequent Borrowers #${i}`,
+                        description: `A Hong Kong public library tracks members and active book loans. Find the names of borrowers in \`${tblMembers}\` who currently have more than 4 books on loan in \`${tblLoans}\`.`,
+                        schemaType: 'sql',
+                        tables: [
+                            {
+                                tableName: tblMembers,
+                                schema: [
+                                    { name: 'member_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Member Code' },
+                                    { name: 'borrower_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Full Name' }
+                                ],
+                                seedData: [
+                                    { member_id: 101, borrower_name: 'Alice Chan' },
+                                    { member_id: 102, borrower_name: 'Bob Wong' }
+                                ]
+                            },
+                            {
+                                tableName: tblLoans,
+                                schema: [
+                                    { name: 'loan_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Loan Code' },
+                                    { name: 'member_id', type: 'INT', constraint: 'FOREIGN KEY', desc: 'Member Code' },
+                                    { name: 'book_title', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Book Name' }
+                                ],
+                                seedData: [
+                                    { loan_id: 1, member_id: 101, book_title: 'HK History Vol 1' },
+                                    { loan_id: 2, member_id: 101, book_title: 'HK History Vol 2' },
+                                    { loan_id: 3, member_id: 101, book_title: 'HK History Vol 3' },
+                                    { loan_id: 4, member_id: 101, book_title: 'HK History Vol 4' },
+                                    { loan_id: 5, member_id: 101, book_title: 'HK History Vol 5' },
+                                    { loan_id: 6, member_id: 102, book_title: 'Computer Science' }
+                                ]
+                            }
+                        ],
+                        constraints: 'Standard ANSI SQL syntax.',
+                        sampleOutput: `borrower_name: Alice Chan`,
+                        evaluator: function(resRows) {
+                            if (!resRows || !Array.isArray(resRows)) return false;
+                            if (resRows.length !== 1) return false;
+                            return Object.values(resRows[0])[0] === 'Alice Chan';
+                        }
+                    });
+                } else {
+                    // 3 Tables Senior
+                    const tblPatients = `patients_${i}`;
+                    const tblDoctors = `doctors_${i}`;
+                    const tblWards = `wards_${i}`;
+                    QUESTION_DATASET.push({
+                        id: `sql-${i}`,
+                        track: 'sql',
+                        difficulty: 'Senior',
+                        title: `Kowloon Hospital Patient Placement #${i}`,
+                        description: `A hospital database logs patients, attending doctors, and hospital wards. Find the names of all patients currently assigned to Dr. Chan in the Central Ward.`,
+                        schemaType: 'sql',
+                        tables: [
+                            {
+                                tableName: tblPatients,
+                                schema: [
+                                    { name: 'patient_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Patient Code' },
+                                    { name: 'patient_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Patient Name' },
+                                    { name: 'doctor_id', type: 'INT', constraint: 'FOREIGN KEY', desc: 'Attending Doctor' }
+                                ],
+                                seedData: [
+                                    { patient_id: 1, patient_name: 'David Cheung', doctor_id: 10 },
+                                    { patient_id: 2, patient_name: 'Eva Lee', doctor_id: 20 }
+                                ]
+                            },
+                            {
+                                tableName: tblDoctors,
+                                schema: [
+                                    { name: 'doctor_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Doctor Code' },
+                                    { name: 'doctor_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Doctor Name' },
+                                    { name: 'ward_id', type: 'INT', constraint: 'FOREIGN KEY', desc: 'Ward Location' }
+                                ],
+                                seedData: [
+                                    { doctor_id: 10, doctor_name: 'Dr. Chan', ward_id: 5 },
+                                    { doctor_id: 20, doctor_name: 'Dr. Smith', ward_id: 8 }
+                                ]
+                            },
+                            {
+                                tableName: tblWards,
+                                schema: [
+                                    { name: 'ward_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Ward Code' },
+                                    { name: 'ward_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Ward Title' }
+                                ],
+                                seedData: [
+                                    { ward_id: 5, ward_name: 'Central Ward' },
+                                    { ward_id: 8, ward_name: 'East Ward' }
+                                ]
+                            }
+                        ],
+                        constraints: 'Standard ANSI SQL syntax.',
+                        sampleOutput: `patient_name: David Cheung`,
+                        evaluator: function(resRows) {
+                            if (!resRows || !Array.isArray(resRows)) return false;
+                            if (resRows.length !== 1) return false;
+                            return Object.values(resRows[0])[0] === 'David Cheung';
+                        }
+                    });
+                }
+            }
+
+            // SQL Olympiad (71-100) -> Strictly 2 or more Tables
+            for (let i = 71; i <= 100; i++) {
+                if (i <= 85) {
+                    // 2 Tables Olympiad
+                    const tblStalls = `stalls_${i}`;
+                    const tblSales = `sales_${i}`;
+                    QUESTION_DATASET.push({
+                        id: `sql-${i}`,
+                        track: 'sql',
+                        difficulty: 'Olympiad',
+                        title: `Mong Kok Market Above-Average Stalls #${i}`,
+                        description: `A market registry records street stalls and sales receipts across tables \`${tblStalls}\` and \`${tblSales}\`. Find the names of all stalls whose overall sales revenue is higher than the average sales revenue across all stalls in the market.`,
+                        schemaType: 'sql',
+                        tables: [
+                            {
+                                tableName: tblStalls,
+                                schema: [
+                                    { name: 'stall_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Stall ID' },
+                                    { name: 'stall_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Stall Name' }
+                                ],
+                                seedData: [
+                                    { stall_id: 1, stall_name: 'Ladies Market Crafts' },
+                                    { stall_id: 2, stall_name: 'Sneaker Street Shop' }
+                                ]
+                            },
+                            {
+                                tableName: tblSales,
+                                schema: [
+                                    { name: 'sale_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Receipt Code' },
+                                    { name: 'stall_id', type: 'INT', constraint: 'FOREIGN KEY', desc: 'Stall ID' },
+                                    { name: 'amount', type: 'INT', constraint: '> 0', desc: 'Transaction Total' }
+                                ],
+                                seedData: [
+                                    { sale_id: 10, stall_id: 1, amount: 2000 },
+                                    { sale_id: 20, stall_id: 2, amount: 15000 }
+                                ]
+                            }
+                        ],
+                        constraints: 'Standard ANSI SQL syntax.',
+                        sampleOutput: `stall_name: Sneaker Street Shop | amount: 15000`,
+                        evaluator: function(resRows) {
+                            if (!resRows || !Array.isArray(resRows)) return false;
+                            return resRows.length > 0 && resRows[0].stall_name === 'Sneaker Street Shop';
+                        }
+                    });
+                } else {
+                    // 3 Tables Olympiad
+                    const tblVessels = `vessels_${i}`;
+                    const tblDockings = `dockings_${i}`;
+                    const tblInspections = `inspections_${i}`;
+                    QUESTION_DATASET.push({
+                        id: `sql-${i}`,
+                        track: 'sql',
+                        difficulty: 'Olympiad',
+                        title: `Victoria Harbour Pier Safety Audit #${i}`,
+                        description: `The Marine Department tracks vessels, pier docking logs, and safety inspections across three tables. Find the names of vessel owners whose ships docked at Pier 3 and passed all safety inspections.`,
+                        schemaType: 'sql',
+                        tables: [
+                            {
+                                tableName: tblVessels,
+                                schema: [
+                                    { name: 'vessel_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Ship Code' },
+                                    { name: 'owner_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Vessel Owner' }
+                                ],
+                                seedData: [
+                                    { vessel_id: 501, owner_name: 'Star Ferry Co' },
+                                    { vessel_id: 502, owner_name: 'Harbour Cruises Ltd' }
+                                ]
+                            },
+                            {
+                                tableName: tblDockings,
+                                schema: [
+                                    { name: 'dock_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Dock Log Code' },
+                                    { name: 'vessel_id', type: 'INT', constraint: 'FOREIGN KEY', desc: 'Ship Code' },
+                                    { name: 'pier_no', type: 'INT', constraint: '1-10', desc: 'Pier Terminal Number' }
+                                ],
+                                seedData: [
+                                    { dock_id: 1, vessel_id: 501, pier_no: 3 },
+                                    { dock_id: 2, vessel_id: 502, pier_no: 9 }
+                                ]
+                            },
+                            {
+                                tableName: tblInspections,
+                                schema: [
+                                    { name: 'inspection_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Audit Code' },
+                                    { name: 'vessel_id', type: 'INT', constraint: 'FOREIGN KEY', desc: 'Ship Code' },
+                                    { name: 'passed_flag', type: 'INT', constraint: '1 or 0', desc: 'Safety Pass Indicator' }
+                                ],
+                                seedData: [
+                                    { inspection_id: 88, vessel_id: 501, passed_flag: 1 },
+                                    { inspection_id: 89, vessel_id: 502, passed_flag: 0 }
+                                ]
+                            }
+                        ],
+                        constraints: 'Standard ANSI SQL syntax.',
+                        sampleOutput: `owner_name: Star Ferry Co`,
+                        evaluator: function(resRows) {
+                            if (!resRows || !Array.isArray(resRows)) return false;
+                            return resRows.length > 0 && Object.values(resRows[0])[0] === 'Star Ferry Co';
+                        }
+                    });
+                }
             }
         })();
 
         class HKOIApp {
             constructor() {
-                this.currentTrack = 'python'; // 'python' or 'sql'
+                this.currentTrack = 'python';
                 this.currentDiff = 'All';
                 this.currentQuestion = null;
                 this.userState = {
@@ -560,12 +888,11 @@
                     try {
                         this.userState = JSON.parse(saved);
                     } catch(e) {
-                        console.error('Failed to parse saved user state', e);
+                        console.error('State parse error', e);
                     }
                 }
                 this.updateUserStatsUI();
                 
-                // Line numbers auto-sync
                 const codeEditor = document.getElementById('code-editor');
                 if (codeEditor) {
                     codeEditor.addEventListener('input', () => this.syncLineNumbers());
@@ -634,7 +961,8 @@
                 const grid = document.getElementById('questions-grid');
                 grid.innerHTML = '';
 
-                const searchVal = document.getElementById('menu-search').value.toLowerCase();
+                const searchInput = document.getElementById('menu-search');
+                const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
 
                 const filtered = QUESTION_DATASET.filter(q => {
                     if (q.track !== this.currentTrack) return false;
@@ -647,9 +975,6 @@
                     const isSolved = !!this.userState.solved[q.id];
                     const card = document.createElement('div');
 
-                    // MANDATORY CARD STYLING:
-                    // Unsolved: bg-black text-zinc-200 border border-zinc-800 hover:bg-zinc-900
-                    // Solved: bg-emerald-600 text-white border-2 border-emerald-400 shadow-lg shadow-emerald-950/60
                     if (isSolved) {
                         card.className = "bg-emerald-600 text-white border-2 border-emerald-400 shadow-lg shadow-emerald-950/60 rounded-xl p-4 cursor-pointer transition transform hover:-translate-y-0.5 flex flex-col justify-between";
                     } else {
@@ -685,45 +1010,49 @@
                 this.currentQuestion = q;
                 this.navigateTo('workspace');
 
-                // Set headers
                 document.getElementById('ws-title').innerText = `${q.id.toUpperCase()}: ${q.title}`;
                 document.getElementById('ws-problem-heading').innerText = q.title;
                 document.getElementById('ws-track-tag').innerText = `${q.track === 'python' ? 'Python Algorithmic Track' : 'SQL Database Track'}`;
                 document.getElementById('ws-difficulty-badge').innerText = q.difficulty;
                 document.getElementById('ws-description').innerText = q.description;
                 document.getElementById('ws-constraints').innerText = q.constraints;
-                document.getElementById('ws-sample-input').innerText = q.sampleInput;
                 document.getElementById('ws-sample-output').innerText = q.sampleOutput;
                 document.getElementById('editor-lang-badge').innerText = q.track === 'python' ? 'Python 3' : 'SQL (AlaSQL)';
 
-                // Render SCHEMA TABLE
                 const schemaContainer = document.getElementById('schema-container');
                 const schemaTitle = document.getElementById('schema-table-title');
 
-                if (q.schemaType === 'sql') {
-                    schemaTitle.innerText = `Database Table Schema: ${q.tableName}`;
-                    let rowsHtml = q.schema.map(col => `
-                        <tr class="border-b border-zinc-800 text-zinc-300">
-                            <td class="p-2 font-mono text-emerald-400">${col.name}</td>
-                            <td class="p-2 font-mono text-cyan-400">${col.type}</td>
-                            <td class="p-2 font-mono text-amber-400">${col.constraint}</td>
-                            <td class="p-2 text-zinc-400">${col.desc}</td>
-                        </tr>
-                    `).join('');
+                if (q.schemaType === 'sql' && q.tables) {
+                    schemaTitle.innerText = `Database Schemas (${q.tables.length} Table${q.tables.length > 1 ? 's' : ''})`;
+                    let html = '';
+                    q.tables.forEach(tbl => {
+                        let rows = tbl.schema.map(col => `
+                            <tr class="border-b border-zinc-800 text-zinc-300">
+                                <td class="p-2 font-mono text-emerald-400">${col.name}</td>
+                                <td class="p-2 font-mono text-cyan-400">${col.type}</td>
+                                <td class="p-2 font-mono text-amber-400">${col.constraint}</td>
+                                <td class="p-2 text-zinc-400">${col.desc}</td>
+                            </tr>
+                        `).join('');
 
-                    schemaContainer.innerHTML = `
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-zinc-900 text-zinc-400 uppercase text-[10px] border-b border-zinc-800">
-                                <tr>
-                                    <th class="p-2">Column Name</th>
-                                    <th class="p-2">Type</th>
-                                    <th class="p-2">Constraint</th>
-                                    <th class="p-2">Description</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rowsHtml}</tbody>
-                        </table>
-                    `;
+                        html += `
+                            <div class="mb-3">
+                                <div class="text-[11px] font-bold text-cyan-400 font-mono mb-1">Table Name: ${tbl.tableName}</div>
+                                <table class="w-full text-left text-xs mb-2">
+                                    <thead class="bg-zinc-900 text-zinc-400 uppercase text-[10px] border-b border-zinc-800">
+                                        <tr>
+                                            <th class="p-2">Column Name</th>
+                                            <th class="p-2">Type</th>
+                                            <th class="p-2">Constraint</th>
+                                            <th class="p-2">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>${rows}</tbody>
+                                </table>
+                            </div>
+                        `;
+                    });
+                    schemaContainer.innerHTML = html;
                 } else {
                     schemaTitle.innerText = `Function Parameter Specifications`;
                     let rowsHtml = q.schema.map(param => `
@@ -750,7 +1079,6 @@
                     `;
                 }
 
-                // Strictly enforce default code box initial contents
                 this.resetCodeBox();
                 document.getElementById('console-output').innerHTML = `<span class="text-zinc-600">Click "Test Code" to inspect execution output or "Submit Code" to evaluate solution.</span>`;
                 document.getElementById('ac-banner').classList.add('hidden');
@@ -760,14 +1088,8 @@
 
             resetCodeBox() {
                 const editor = document.getElementById('code-editor');
-                if (!this.currentQuestion) return;
-                // STRICT RULE:
-                // Python mode: strictly print("helloworld")
-                // SQL mode: strictly SELECT 'helloworld';
-                if (this.currentQuestion.track === 'python') {
-                    editor.value = 'print("helloworld")';
-                } else {
-                    editor.value = "SELECT 'helloworld';";
+                if (editor) {
+                    editor.value = '';
                 }
                 this.syncLineNumbers();
             }
@@ -799,25 +1121,25 @@
                 const track = this.currentQuestion.track;
 
                 if (track === 'sql') {
-                    /* CRITICAL BUGFIX: PRE-SEED SILENTLY */
                     try {
                         alasql('DROP DATABASE IF EXISTS hkoi_temp; CREATE DATABASE hkoi_temp; USE hkoi_temp;');
                         
-                        // Seed table silently
-                        if (this.currentQuestion.schemaType === 'sql' && this.currentQuestion.tableName) {
-                            const tbl = this.currentQuestion.tableName;
-                            alasql(`CREATE TABLE ${tbl} (record_id INT, hk_district VARCHAR(50), score_val INT);`);
-                            if (this.currentQuestion.seedData) {
-                                this.currentQuestion.seedData.forEach(row => {
-                                    alasql(`INSERT INTO ${tbl} VALUES (${row.record_id}, '${row.hk_district}', ${row.score_val});`);
-                                });
-                            }
+                        if (this.currentQuestion.schemaType === 'sql' && this.currentQuestion.tables) {
+                            this.currentQuestion.tables.forEach(tbl => {
+                                const colDefs = tbl.schema.map(c => `${c.name} ${c.type}`).join(', ');
+                                alasql(`CREATE TABLE ${tbl.tableName} (${colDefs});`);
+                                if (tbl.seedData && tbl.seedData.length > 0) {
+                                    tbl.seedData.forEach(row => {
+                                        const keys = Object.keys(row);
+                                        const vals = keys.map(k => typeof row[k] === 'string' ? `'${row[k]}'` : row[k]).join(', ');
+                                        alasql(`INSERT INTO ${tbl.tableName} (${keys.join(', ')}) VALUES (${vals});`);
+                                    });
+                                }
+                            });
                         }
 
-                        // Run user query ONLY and obtain result
                         const res = alasql(code);
 
-                        // Format result table
                         let formattedOutput = "";
                         if (Array.isArray(res)) {
                             if (res.length === 0) {
@@ -839,7 +1161,7 @@
                             if (passed) {
                                 this.handleSuccess();
                             } else {
-                                this.handleWrongAnswer("Result query rows did not match canonical answer dataset.");
+                                this.handleWrongAnswer("Result query rows did not match expected database answer.");
                             }
                         } else {
                             verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30";
@@ -851,14 +1173,12 @@
                         verdictBadge.innerText = "Runtime Error";
                     }
                 } else {
-                    // Python Execution Emulator
                     try {
                         let capturedStdout = [];
                         const mockPrint = (...args) => {
                             capturedStdout.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
                         };
 
-                        // Simple Python-to-JS execution wrapper for basic standard operations
                         let jsCode = code.replace(/print\((.*?)\)/g, 'mockPrint($1)');
                         
                         const runFn = new Function('mockPrint', jsCode);
@@ -872,7 +1192,7 @@
                             if (passed) {
                                 this.handleSuccess();
                             } else {
-                                this.handleWrongAnswer(`Output mismatch.\nGot: "${userStdout}"\nExpected matching: "${this.currentQuestion.sampleOutput}"`);
+                                this.handleWrongAnswer(`Output mismatch.\nGot: "${userStdout}"\nExpected: "${this.currentQuestion.sampleOutput}"`);
                             }
                         } else {
                             verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30";
@@ -900,7 +1220,6 @@
                     this.saveState();
                 }
 
-                // Automatic redirect back to menu after 1.5 seconds
                 setTimeout(() => {
                     this.navigateTo('menu');
                 }, 1500);
@@ -920,7 +1239,6 @@
             }
         }
 
-        // Initialize App on DOM Ready
         window.app = null;
         window.addEventListener('DOMContentLoaded', () => {
             window.app = new HKOIApp();
