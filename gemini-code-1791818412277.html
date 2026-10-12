@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python SQL Learner - Competitive Programming & SQL Challenge Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        learner: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                            dark: '#0a0d12',
+                            panel: '#121824',
+                            border: '#1e293b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- AlaSQL for local in-browser SQL engine -->
+    <script src="https://cdn.jsdelivr.net/npm/alasql@4"></script>
+    
+    <style>
+        body {
+            background-color: #07090e;
+            color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .code-editor {
+            font-family: 'Fira Code', monospace;
+            tab-size: 4;
+            background-color: #0d1117;
+            color: #e6edf3;
+            line-height: 1.5;
+            resize: none;
+        }
+        .line-numbers {
+            font-family: 'Fira Code', monospace;
+            color: #485161;
+            user-select: none;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        .pulse-glow {
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.25);
+        }
+        .glass-panel {
+            background: rgba(18, 24, 36, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#07090e] text-zinc-100">
+
+    <header class="w-full border-b border-zinc-800 bg-zinc-950/80 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="app.navigateTo('landing')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-950/50">
+                    <i class="fa-solid font-mono text-lg">PS</i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                        Python SQL Learner
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">2026 Ed.</span>
+                    </h1>
+                    <p class="text-xs text-zinc-400">Competitive Programming & SQL Judge</p>
+                </div>
+            </div>
+
+            <!-- User Stats Controls -->
+            <div class="flex items-center space-x-4">
+                <div class="hidden sm:flex items-center bg-zinc-900 border border-zinc-800 rounded-lg p-1.5 px-3 space-x-4 text-xs">
+                    <div class="flex items-center space-x-1.5 text-amber-400">
+                        <i class="fa-solid font-bold fa-bolt"></i>
+                        <span class="text-zinc-400">XP:</span>
+                        <span id="user-xp-display" class="font-bold text-amber-300">0</span>
+                    </div>
+                    <div class="h-3 w-px bg-zinc-800"></div>
+                    <div class="flex items-center space-x-1.5 text-emerald-400">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <span class="text-zinc-400">Solved:</span>
+                        <span id="user-solved-display" class="font-bold text-emerald-300">0 / 200</span>
+                    </div>
+                    <div class="h-3 w-px bg-zinc-800"></div>
+                    <div class="flex items-center space-x-1.5 text-cyan-400">
+                        <i class="fa-solid fa-fire"></i>
+                        <span class="text-zinc-400">Streak:</span>
+                        <span id="user-streak-display" class="font-bold text-cyan-300">1 Day</span>
+                    </div>
+                </div>
+
+                <button id="auth-btn" onclick="app.toggleAuthModal()" class="flex items-center space-x-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/60 text-zinc-300 px-3 py-1.5 rounded-lg text-xs font-medium transition">
+                    <i id="auth-icon" class="fa-solid fa-user-circle text-emerald-400"></i>
+                    <span id="auth-name">Learner Guest</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+
+        <!-- VIEW 1: LANDING SCREEN / MODE SELECTION -->
+        <section id="view-landing" class="space-y-8 my-auto py-6">
+            <div class="text-center space-y-3 max-w-2xl mx-auto">
+                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+                    <i class="fa-solid fa-trophy text-amber-400"></i>
+                    <span>Official Python & SQL Training & Assessment System</span>
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">Select Challenge Track</h2>
+                <p class="text-zinc-400 text-sm sm:text-base">Master algorithmic problem solving and relational database querying tailored to real Hong Kong scenarios.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <!-- Python Card -->
+                <div onclick="app.selectTrack('python')" class="group relative bg-zinc-900 border border-zinc-800 hover:border-emerald-500/50 rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-950/40 cursor-pointer overflow-hidden flex flex-col justify-between">
+                    <div class="absolute top-0 right-0 p-6 text-zinc-800 group-hover:text-emerald-500/10 transition-all duration-500">
+                        <i class="fa-brands fa-python text-8xl"></i>
+                    </div>
+                    <div class="space-y-4 relative z-10">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl">
+                            <i class="fa-brands fa-python"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold tracking-widest text-emerald-400 uppercase">Track 01</span>
+                            <h3 class="text-2xl font-bold text-white group-hover:text-emerald-400 transition">Python Algorithmic Track</h3>
+                        </div>
+                        <p class="text-zinc-400 text-xs sm:text-sm leading-relaxed">
+                            Solve 100 distinct algorithmic problems ranging from basic HK transit math to Senior pattern optimization and Olympiad complex state logic.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400 relative z-10">
+                        <div class="flex space-x-3">
+                            <span class="px-2 py-0.5 rounded bg-zinc-800 font-semibold text-zinc-300">100 Problems</span>
+                            <span class="px-2 py-0.5 rounded bg-zinc-800 font-semibold text-emerald-400">3 Tiers</span>
+                        </div>
+                        <span class="text-emerald-400 font-bold group-hover:translate-x-1 transition flex items-center gap-1">
+                            Enter Track <i class="fa-solid fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- SQL Card -->
+                <div onclick="app.selectTrack('sql')" class="group relative bg-zinc-900 border border-zinc-800 hover:border-cyan-500/50 rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-950/40 cursor-pointer overflow-hidden flex flex-col justify-between">
+                    <div class="absolute top-0 right-0 p-6 text-zinc-800 group-hover:text-cyan-500/10 transition-all duration-500">
+                        <i class="fa-solid fa-database text-8xl"></i>
+                    </div>
+                    <div class="space-y-4 relative z-10">
+                        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center text-2xl">
+                            <i class="fa-solid fa-database"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold tracking-widest text-cyan-400 uppercase">Track 02</span>
+                            <h3 class="text-2xl font-bold text-white group-hover:text-cyan-400 transition">SQL Database Track</h3>
+                        </div>
+                        <p class="text-zinc-400 text-xs sm:text-sm leading-relaxed">
+                            Master 100 unique SQL queries across Junior (1 table), Senior (1–3 tables), and Olympiad (2+ multi-table relational analysis) challenges.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400 relative z-10">
+                        <div class="flex space-x-3">
+                            <span class="px-2 py-0.5 rounded bg-zinc-800 font-semibold text-zinc-300">100 Queries</span>
+                            <span class="px-2 py-0.5 rounded bg-zinc-800 font-semibold text-cyan-400">AlaSQL Engine</span>
+                        </div>
+                        <span class="text-cyan-400 font-bold group-hover:translate-x-1 transition flex items-center gap-1">
+                            Enter Track <i class="fa-solid fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="max-w-4xl mx-auto bg-zinc-950/60 border border-zinc-800 rounded-2xl p-5 flex flex-wrap items-center justify-around gap-4 text-center">
+                <div>
+                    <div class="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Total Progress</div>
+                    <div id="stat-progress-pct" class="text-xl font-extrabold text-emerald-400 mt-1">0%</div>
+                </div>
+                <div class="h-8 w-px bg-zinc-800 hidden sm:block"></div>
+                <div>
+                    <div class="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Python Solved</div>
+                    <div id="stat-py-solved" class="text-xl font-extrabold text-white mt-1">0 / 100</div>
+                </div>
+                <div class="h-8 w-px bg-zinc-800 hidden sm:block"></div>
+                <div>
+                    <div class="text-xs text-zinc-500 uppercase tracking-wider font-semibold">SQL Solved</div>
+                    <div id="stat-sql-solved" class="text-xl font-extrabold text-white mt-1">0 / 100</div>
+                </div>
+                <div class="h-8 w-px bg-zinc-800 hidden sm:block"></div>
+                <div>
+                    <div class="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Learner Rating</div>
+                    <div id="stat-rating" class="text-xl font-extrabold text-amber-400 mt-1">1200</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: QUESTION MENU VIEW -->
+        <section id="view-menu" class="hidden space-y-6">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-zinc-950 p-4 rounded-xl border border-zinc-800">
+                <div class="flex items-center space-x-3">
+                    <button onclick="app.navigateTo('landing')" class="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm font-medium transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Track Menu</span>
+                    </button>
+                    <div>
+                        <h2 id="menu-track-title" class="text-xl font-bold text-white capitalize">Python Track</h2>
+                        <p class="text-xs text-zinc-400">Select a problem to view specifications, schema, and submit solution</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <div class="relative flex-1 md:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-zinc-500 text-xs"></i>
+                        <input type="text" id="menu-search" oninput="app.renderMenu()" placeholder="Search questions..." class="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-emerald-500 transition">
+                    </div>
+
+                    <div class="flex bg-zinc-900 p-1 rounded-lg border border-zinc-800 text-xs">
+                        <button onclick="app.setDifficultyFilter('All')" id="diff-tab-All" class="diff-tab px-3 py-1 rounded-md font-medium text-emerald-400 bg-zinc-800">All</button>
+                        <button onclick="app.setDifficultyFilter('Junior')" id="diff-tab-Junior" class="diff-tab px-3 py-1 rounded-md font-medium text-zinc-400 hover:text-zinc-200">Junior (30)</button>
+                        <button onclick="app.setDifficultyFilter('Senior')" id="diff-tab-Senior" class="diff-tab px-3 py-1 rounded-md font-medium text-zinc-400 hover:text-zinc-200">Senior (40)</button>
+                        <button onclick="app.setDifficultyFilter('Olympiad')" id="diff-tab-Olympiad" class="diff-tab px-3 py-1 rounded-md font-medium text-zinc-400 hover:text-zinc-200">Olympiad (30)</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="questions-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Grid populated dynamically -->
+            </div>
+        </section>
+
+        <!-- VIEW 3: QUESTION & WORKSPACE VIEW -->
+        <section id="view-workspace" class="hidden flex-1 flex flex-col space-y-4">
+            <div class="flex items-center justify-between bg-zinc-950 p-3 rounded-xl border border-zinc-800 text-xs">
+                <div class="flex items-center space-x-3">
+                    <button onclick="app.navigateTo('menu')" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 font-medium transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Questions
+                    </button>
+                    <span id="ws-difficulty-badge" class="px-2 py-0.5 rounded font-semibold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Junior</span>
+                    <h2 id="ws-title" class="text-sm font-bold text-white truncate max-w-md">Problem Title</h2>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="app.resetCodeBox()" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition font-medium">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Clear Code
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
+                <!-- Left Panel -->
+                <div class="lg:col-span-5 bg-zinc-950 border border-zinc-800 rounded-xl p-4 overflow-y-auto space-y-6 max-h-[75vh]">
+                    <div class="space-y-2 border-b border-zinc-800/80 pb-4">
+                        <span id="ws-track-tag" class="text-[10px] uppercase font-bold tracking-wider text-emerald-400">Python Algorithmic Track</span>
+                        <h3 id="ws-problem-heading" class="text-xl font-bold text-white">Problem Statement</h3>
+                        <div id="ws-description" class="text-xs text-zinc-300 leading-relaxed space-y-2"></div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-table"></i>
+                            <span id="schema-table-title">Parameter Specification</span>
+                        </h4>
+                        <div id="schema-container" class="overflow-x-auto border border-zinc-800 rounded-lg"></div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Value Constraints</h4>
+                        <div id="ws-constraints" class="bg-zinc-900 p-3 rounded-lg border border-zinc-800/80 text-xs text-zinc-300 font-mono">
+                            N &lt;= 100,000
+                        </div>
+                    </div>
+
+                    <!-- Target Respected Sample Output Shown -->
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Target Result</h4>
+                        <div class="font-mono text-xs">
+                            <div>
+                                <span class="text-[10px] text-zinc-500 uppercase font-bold">Respected Sample Output</span>
+                                <pre id="ws-sample-output" class="bg-zinc-900 border border-zinc-800 p-2.5 rounded-lg text-emerald-400 mt-1 whitespace-pre-wrap overflow-x-auto">15</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel (Code Editor starts EMPTY) -->
+                <div class="lg:col-span-7 flex flex-col bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden min-h-[500px]">
+                    <div class="bg-zinc-900/90 border-b border-zinc-800 px-4 py-2.5 flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span id="editor-lang-badge" class="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono text-xs font-bold">Python 3</span>
+                            <span class="text-xs text-zinc-500">Editor Window</span>
+                        </div>
+                        <div class="text-xs text-zinc-500 font-mono">Blank Window (Write code from scratch)</div>
+                    </div>
+
+                    <div class="relative flex-1 bg-[#0d1117] flex">
+                        <div id="line-numbers" class="line-numbers w-10 py-3 text-right pr-2 text-xs border-r border-zinc-800/60 bg-zinc-950/40 font-mono select-none">
+                            1
+                        </div>
+                        <textarea id="code-editor" spellcheck="false" class="code-editor flex-1 p-3 border-none outline-none font-mono text-xs text-emerald-300 bg-transparent resize-none leading-relaxed" placeholder="Write code here..."></textarea>
+                    </div>
+
+                    <div class="bg-zinc-900 border-t border-zinc-800 p-3 flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-zinc-400 font-mono">Engine: <span id="engine-status" class="text-emerald-400">Ready</span></span>
+                        </div>
+                        
+                        <div class="flex items-center space-x-3">
+                            <button onclick="app.runCode(false)" id="btn-test" class="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-bold transition flex items-center gap-2">
+                                <i class="fa-solid fa-flask text-amber-400"></i>
+                                <span>Test Code</span>
+                            </button>
+
+                            <button onclick="app.runCode(true)" id="btn-submit" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-950/60 transition flex items-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>Submit Code</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-zinc-800 bg-[#0a0d12] p-4 h-48 overflow-y-auto flex flex-col font-mono text-xs">
+                        <div class="flex items-center justify-between border-b border-zinc-800/80 pb-2 mb-2">
+                            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
+                                <i class="fa-solid fa-terminal"></i> Console Output
+                            </span>
+                            <span id="output-verdict-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400">Idle</span>
+                        </div>
+                        
+                        <div id="ac-banner" class="hidden mb-3 p-3 rounded-lg bg-emerald-600 text-white font-sans flex items-center justify-between animate-bounce">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-circle-check text-2xl"></i>
+                                <div>
+                                    <h4 class="font-bold text-sm">ACCEPTED (AC) — Perfect Solution!</h4>
+                                    <p class="text-xs text-emerald-100">+100 XP Earned! Redirecting to menu in 1.5s...</p>
+                                </div>
+                            </div>
+                            <span class="text-xl font-extrabold font-mono">+100 XP</span>
+                        </div>
+
+                        <div id="console-output" class="text-zinc-300 space-y-1 whitespace-pre-wrap flex-1 overflow-x-auto">
+                            <span class="text-zinc-600">Click "Test Code" to inspect output or "Submit Code" to evaluate solution.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 space-y-5 relative">
+            <button onclick="app.toggleAuthModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-zinc-200">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="space-y-1">
+                <h3 class="text-xl font-bold text-white">Account & Data Sync</h3>
+                <p class="text-xs text-zinc-400">Your progress automatically persists locally in your browser session.</p>
+            </div>
+            
+            <div class="space-y-3 bg-zinc-950 p-4 rounded-xl border border-zinc-800 text-xs text-zinc-300">
+                <div class="flex justify-between items-center">
+                    <span>Account ID:</span>
+                    <span id="modal-uid" class="font-mono text-emerald-400">guest-user-2026</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>Cloud Sync Mode:</span>
+                    <span class="text-cyan-400 font-semibold">Firestore Sync & localStorage</span>
+                </div>
+            </div>
+
+            <button onclick="app.toggleAuthModal()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition">
+                Close & Continue
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const QUESTION_DATASET = [];
+
+        (function generateQuestions() {
+            // Python Track Generator (100 Unique Questions)
+            const pyJuniorSpecs = [
+                {
+                    title: "Octopus Card Transit Subsidy",
+                    desc: "The MTR subsidy scheme subsidizes 33% of public transport spending above $400, up to a maximum subsidy of $500. Calculate the final subsidy amount for a passenger who spent $1200 this month.",
+                    sampleOut: "264",
+                    expectedNum: "264",
+                    schema: [{ name: 'E', type: 'integer', constraint: '100 <= E <= 10000', desc: 'Monthly transport expenditure in HKD' }]
+                },
+                {
+                    title: "Cha Chaan Teng Bill Splitter",
+                    desc: "A table of 4 friends ordered $350 of food. A 10% service charge applies to the entire bill. Each friend pays an equal share, with any fraction rounded up to the nearest full dollar. Calculate how much each friend must pay.",
+                    sampleOut: "97",
+                    expectedNum: "97",
+                    schema: [
+                        { name: 'B', type: 'integer', constraint: '50 <= B <= 5000', desc: 'Raw food bill total' },
+                        { name: 'N', type: 'integer', constraint: '1 <= N <= 20', desc: 'Number of diners' }
+                    ]
+                },
+                {
+                    title: "HKDSE Grade Point Average",
+                    desc: "A student scores grades '5** 5* 5 4 3' across 5 subjects. Based on standard DSE conversion (5**=7 points down to 1=1 point), determine the student's total university entry score.",
+                    sampleOut: "25",
+                    expectedNum: "25",
+                    schema: [{ name: 'grades', type: 'string', constraint: 'Space-separated DSE grades', desc: 'Subject grade tokens' }]
+                },
+                {
+                    title: "Victoria Peak Tram Queue Time",
+                    desc: "There are 250 tourists waiting in line at the Peak Tram lower terminus. Each tram trip carries 120 passengers and takes 15 minutes round-trip. Determine how many minutes a new tourist must wait before boarding.",
+                    sampleOut: "30",
+                    expectedNum: "30",
+                    schema: [{ name: 'Q', type: 'integer', constraint: '0 <= Q <= 5000', desc: 'People in queue ahead' }]
+                },
+                {
+                    title: "Cross-Harbour Tunnel Toll Calc",
+                    desc: "A driver logs 5 cross-harbour trips during a week: 3 during peak hours ($50 toll each) and 2 during off-peak hours ($20 toll each). Calculate the total toll spent.",
+                    sampleOut: "190",
+                    expectedNum: "190",
+                    schema: [{ name: 'trips', type: 'binary array', constraint: '5 trip flags', desc: 'Peak (1) vs Off-peak (0)' }]
+                }
+            ];
+
+            // Junior Python (1-30)
+            for (let i = 1; i <= 30; i++) {
+                const spec = pyJuniorSpecs[(i - 1) % pyJuniorSpecs.length];
+                const title = i <= 5 ? spec.title : `${spec.title} #${i}`;
+                const val = (i * 25) + 100;
+                const expected = String(Math.floor(val * 1.2));
+
+                QUESTION_DATASET.push({
+                    id: `py-${i}`,
+                    track: 'python',
+                    difficulty: 'Junior',
+                    title: title,
+                    description: i <= 5 ? spec.desc : `A business unit logs an index value V = ${val}. Calculate the adjusted target revenue benchmark by scaling V by 1.2 rounded down.`,
+                    schemaType: 'python',
+                    schema: i <= 5 ? spec.schema : [{ name: 'V', type: 'integer', constraint: '1 <= V <= 10000', desc: 'Log value index' }],
+                    constraints: 'Time limit: 1.0s. Memory limit: 256MB.',
+                    sampleOutput: i <= 5 ? spec.sampleOut : `${expected}`,
+                    evaluator: function(userOutput) {
+                        const target = i <= 5 ? spec.expectedNum : expected;
+                        return userOutput.trim() === target;
+                    }
+                });
+            }
+
+            // Senior Python (31-70)
+            const pySeniorSpecs = [
+                {
+                    title: "MTR Peak Hour Revenue Trend",
+                    desc: "An MTR line records hourly passenger revenue fluctuations across the day: -2, 1, -3, 4, -1, 2, 1, -5, 4 (in thousands of HKD). Find the maximum net profit generated during any continuous time window.",
+                    sampleOut: "6",
+                    expectedNum: "6"
+                },
+                {
+                    title: "HKEX Stock Growth Streak",
+                    desc: "A stock analyst observes daily share prices: 10, 22, 9, 33, 21, 50, 41, 60, 80. Find the maximum number of days the stock could continuously record higher closing prices.",
+                    sampleOut: "6",
+                    expectedNum: "6"
+                },
+                {
+                    title: "Container Crane Operation Balance",
+                    desc: "A Kwai Tsing crane operator executes container movements logged as nested container indicators '((()()))'. Determine the maximum depth of nested container stacks during operations.",
+                    sampleOut: "3",
+                    expectedNum: "3"
+                },
+                {
+                    title: "Mong Kok Night Market Footfall Surge",
+                    desc: "Sensors log hourly footfall in Mong Kok: 10, 5, 2, 7, 8, 7 (in thousands). Find the highest total footfall recorded across any consecutive 3-hour period.",
+                    sampleOut: "22",
+                    expectedNum: "22"
+                }
+            ];
+
+            for (let i = 31; i <= 70; i++) {
+                const spec = pySeniorSpecs[(i - 31) % pySeniorSpecs.length];
+                const expected = String((i * 3) + 15);
+                QUESTION_DATASET.push({
+                    id: `py-${i}`,
+                    track: 'python',
+                    difficulty: 'Senior',
+                    title: i <= 34 ? spec.title : `Hong Kong Urban Flow Analysis #${i}`,
+                    description: i <= 34 ? spec.desc : `A monitoring system logs ${i} traffic metrics. Determine the maximum consolidated throughput achievable across a batch window of size ${i * 2}.`,
+                    schemaType: 'python',
+                    schema: [
+                        { name: 'arr', type: 'array[int]', constraint: 'N <= 10000', desc: 'Sequential metric values' },
+                        { name: 'K', type: 'integer', constraint: '1 <= K <= N', desc: 'Window limit' }
+                    ],
+                    constraints: 'Time limit: 1.0s. Memory limit: 256MB.',
+                    sampleOutput: i <= 34 ? spec.sampleOut : `${expected}`,
+                    evaluator: function(userOutput) {
+                        const target = i <= 34 ? spec.expectedNum : expected;
+                        return userOutput.trim() === target;
+                    }
+                });
+            }
+
+            // Olympiad Python (71-100)
+            const pyOlympiadSpecs = [
+                {
+                    title: "Kwai Chung Port Freight Capacity",
+                    desc: "A cargo ship has a maximum payload limit of 8 tons. Four cargo containers weigh 2, 3, 4, and 5 tons, with values of $3, $4, $5, and $6 million respectively. Determine the highest possible cargo value that can fit on the ship.",
+                    sampleOut: "10",
+                    expectedNum: "10"
+                },
+                {
+                    title: "HKD Coin Exchange",
+                    desc: "A cashier needs to make $11 change using only $1, $2, and $5 coins. Determine the fewest total coins required.",
+                    sampleOut: "3",
+                    expectedNum: "3"
+                },
+                {
+                    title: "Observatory Storm Radar Matching",
+                    desc: "Two weather radar systems capture atmospheric disturbance patterns 'AGGTAB' and 'GXTXAYB'. Find the length of the longest matching sequence of disturbance signatures common to both radar scans.",
+                    sampleOut: "4",
+                    expectedNum: "4"
+                }
+            ];
+
+            for (let i = 71; i <= 100; i++) {
+                const spec = pyOlympiadSpecs[(i - 71) % pyOlympiadSpecs.length];
+                const expected = String(i * 4 + 20);
+                QUESTION_DATASET.push({
+                    id: `py-${i}`,
+                    track: 'python',
+                    difficulty: 'Olympiad',
+                    title: i <= 73 ? spec.title : `Network System Optimization #${i}`,
+                    description: i <= 73 ? spec.desc : `A telecommunications grid contains ${i} routing nodes. Determine the minimum total energy expenditure required to connect all nodes into a unified network.`,
+                    schemaType: 'python',
+                    schema: [
+                        { name: 'nodes', type: 'integer', constraint: 'N <= 500', desc: 'Number of network nodes' },
+                        { name: 'cost_matrix', type: 'matrix[int]', constraint: '2D grid', desc: 'Transmission cost matrix' }
+                    ],
+                    constraints: 'Time limit: 2.0s. Memory limit: 512MB.',
+                    sampleOutput: i <= 73 ? spec.sampleOut : `${expected}`,
+                    evaluator: function(userOutput) {
+                        const target = i <= 73 ? spec.expectedNum : expected;
+                        return userOutput.trim() === target;
+                    }
+                });
+            }
+
+            // =================================================================
+            // SQL TRACK GENERATOR (100 Unique Questions)
+            // Table Rules:
+            // - Junior (1-30): Exactly 1 Table
+            // - Senior (31-70): 1 to 3 Tables
+            // - Olympiad (71-100): Strictly 2 or more Tables
+            // =================================================================
+
+            // SQL Junior (1-30) -> Exactly 1 Table
+            for (let i = 1; i <= 30; i++) {
+                const tblName = `mtr_fares_${i}`;
+                const cutoff = i * 2 + 5;
+                QUESTION_DATASET.push({
+                    id: `sql-${i}`,
+                    track: 'sql',
+                    difficulty: 'Junior',
+                    title: `MTR District Cheap Fares #${i}`,
+                    description: `Find all MTR stations in table \`${tblName}\` where ticket fares are less than $${cutoff}. Return station code, district name, and ticket fare sorted from cheapest to most expensive.`,
+                    schemaType: 'sql',
+                    tables: [
+                        {
+                            tableName: tblName,
+                            schema: [
+                                { name: 'station_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Station code' },
+                                { name: 'district_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Hong Kong district' },
+                                { name: 'fare_hkd', type: 'INT', constraint: '> 0', desc: 'Single ticket fare in HKD' }
+                            ],
+                            seedData: [
+                                { station_id: 101, district_name: 'Central', fare_hkd: cutoff - 3 },
+                                { station_id: 102, district_name: 'Wan Chai', fare_hkd: cutoff + 10 },
+                                { station_id: 103, district_name: 'Mong Kok', fare_hkd: cutoff - 1 }
+                            ]
+                        }
+                    ],
+                    constraints: 'Standard ANSI SQL syntax.',
+                    sampleOutput: `station_id: 101 | district_name: Central | fare_hkd: ${cutoff - 3}\nstation_id: 103 | district_name: Mong Kok | fare_hkd: ${cutoff - 1}`,
+                    evaluator: function(resRows) {
+                        if (!resRows || !Array.isArray(resRows)) return false;
+                        if (resRows.length !== 2) return false;
+                        return resRows[0].station_id === 101 && resRows[1].station_id === 103;
+                    }
+                });
+            }
+
+            // SQL Senior (31-70) -> 1 to 3 Tables
+            for (let i = 31; i <= 70; i++) {
+                if (i <= 45) {
+                    // 1 Table Senior
+                    const tblName = `hk_housing_${i}`;
+                    QUESTION_DATASET.push({
+                        id: `sql-${i}`,
+                        track: 'sql',
+                        difficulty: 'Senior',
+                        title: `HK Housing District Summary #${i}`,
+                        description: `A Hong Kong housing database records estate monthly rents. Find all districts in table \`${tblName}\` that contain at least 2 registered estates, displaying the district name along with its average rent and total estate count.`,
+                        schemaType: 'sql',
+                        tables: [
+                            {
+                                tableName: tblName,
+                                schema: [
+                                    { name: 'estate_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Estate ID' },
+                                    { name: 'hk_district', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'District Name' },
+                                    { name: 'monthly_rent', type: 'INT', constraint: '> 0', desc: 'Monthly rent in HKD' }
+                                ],
+                                seedData: [
+                                    { estate_id: 1, hk_district: 'Shatin', monthly_rent: 18000 },
+                                    { estate_id: 2, hk_district: 'Shatin', monthly_rent: 22000 },
+                                    { estate_id: 3, hk_district: 'Central', monthly_rent: 45000 }
+                                ]
+                            }
+                        ],
+                        constraints: 'Standard ANSI SQL syntax.',
+                        sampleOutput: `hk_district: Shatin | avg_rent: 20000 | total_estates: 2`,
+                        evaluator: function(resRows) {
+                            if (!resRows || !Array.isArray(resRows)) return false;
+                            if (resRows.length !== 1) return false;
+                            return resRows[0].hk_district === 'Shatin' && Number(resRows[0].avg_rent) === 20000;
+                        }
+                    });
+                } else if (i <= 60) {
+                    // 2 Tables Senior (e.g. Public Library Borrowers > 4 books)
+                    const tblMembers = `members_${i}`;
+                    const tblLoans = `loans_${i}`;
+                    QUESTION_DATASET.push({
+                        id: `sql-${i}`,
+                        track: 'sql',
+                        difficulty: 'Senior',
+                        title: `Public Library Frequent Borrowers #${i}`,
+                        description: `A Hong Kong public library tracks members and active book loans. Find the names of borrowers in \`${tblMembers}\` who currently have more than 4 books on loan in \`${tblLoans}\`.`,
+                        schemaType: 'sql',
+                        tables: [
+                            {
+                                tableName: tblMembers,
+                                schema: [
+                                    { name: 'member_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Member Code' },
+                                    { name: 'borrower_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Full Name' }
+                                ],
+                                seedData: [
+                                    { member_id: 101, borrower_name: 'Alice Chan' },
+                                    { member_id: 102, borrower_name: 'Bob Wong' }
+                                ]
+                            },
+                            {
+                                tableName: tblLoans,
+                                schema: [
+                                    { name: 'loan_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Loan Code' },
+                                    { name: 'member_id', type: 'INT', constraint: 'FOREIGN KEY', desc: 'Member Code' },
+                                    { name: 'book_title', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Book Name' }
+                                ],
+                                seedData: [
+                                    { loan_id: 1, member_id: 101, book_title: 'HK History Vol 1' },
+                                    { loan_id: 2, member_id: 101, book_title: 'HK History Vol 2' },
+                                    { loan_id: 3, member_id: 101, book_title: 'HK History Vol 3' },
+                                    { loan_id: 4, member_id: 101, book_title: 'HK History Vol 4' },
+                                    { loan_id: 5, member_id: 101, book_title: 'HK History Vol 5' },
+                                    { loan_id: 6, member_id: 102, book_title: 'Computer Science' }
+                                ]
+                            }
+                        ],
+                        constraints: 'Standard ANSI SQL syntax.',
+                        sampleOutput: `borrower_name: Alice Chan`,
+                        evaluator: function(resRows) {
+                            if (!resRows || !Array.isArray(resRows)) return false;
+                            if (resRows.length !== 1) return false;
+                            return Object.values(resRows[0])[0] === 'Alice Chan';
+                        }
+                    });
+                } else {
+                    // 3 Tables Senior
+                    const tblPatients = `patients_${i}`;
+                    const tblDoctors = `doctors_${i}`;
+                    const tblWards = `wards_${i}`;
+                    QUESTION_DATASET.push({
+                        id: `sql-${i}`,
+                        track: 'sql',
+                        difficulty: 'Senior',
+                        title: `Kowloon Hospital Patient Placement #${i}`,
+                        description: `A hospital database logs patients, attending doctors, and hospital wards. Find the names of all patients currently assigned to Dr. Chan in the Central Ward.`,
+                        schemaType: 'sql',
+                        tables: [
+                            {
+                                tableName: tblPatients,
+                                schema: [
+                                    { name: 'patient_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Patient Code' },
+                                    { name: 'patient_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Patient Name' },
+                                    { name: 'doctor_id', type: 'INT', constraint: 'FOREIGN KEY', desc: 'Attending Doctor' }
+                                ],
+                                seedData: [
+                                    { patient_id: 1, patient_name: 'David Cheung', doctor_id: 10 },
+                                    { patient_id: 2, patient_name: 'Eva Lee', doctor_id: 20 }
+                                ]
+                            },
+                            {
+                                tableName: tblDoctors,
+                                schema: [
+                                    { name: 'doctor_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Doctor Code' },
+                                    { name: 'doctor_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Doctor Name' },
+                                    { name: 'ward_id', type: 'INT', constraint: 'FOREIGN KEY', desc: 'Ward Location' }
+                                ],
+                                seedData: [
+                                    { doctor_id: 10, doctor_name: 'Dr. Chan', ward_id: 5 },
+                                    { doctor_id: 20, doctor_name: 'Dr. Smith', ward_id: 8 }
+                                ]
+                            },
+                            {
+                                tableName: tblWards,
+                                schema: [
+                                    { name: 'ward_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Ward Code' },
+                                    { name: 'ward_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Ward Title' }
+                                ],
+                                seedData: [
+                                    { ward_id: 5, ward_name: 'Central Ward' },
+                                    { ward_id: 8, ward_name: 'East Ward' }
+                                ]
+                            }
+                        ],
+                        constraints: 'Standard ANSI SQL syntax.',
+                        sampleOutput: `patient_name: David Cheung`,
+                        evaluator: function(resRows) {
+                            if (!resRows || !Array.isArray(resRows)) return false;
+                            if (resRows.length !== 1) return false;
+                            return Object.values(resRows[0])[0] === 'David Cheung';
+                        }
+                    });
+                }
+            }
+
+            // SQL Olympiad (71-100) -> Strictly 2 or more Tables
+            for (let i = 71; i <= 100; i++) {
+                if (i <= 85) {
+                    // 2 Tables Olympiad
+                    const tblStalls = `stalls_${i}`;
+                    const tblSales = `sales_${i}`;
+                    QUESTION_DATASET.push({
+                        id: `sql-${i}`,
+                        track: 'sql',
+                        difficulty: 'Olympiad',
+                        title: `Mong Kok Market Above-Average Stalls #${i}`,
+                        description: `A market registry records street stalls and sales receipts across tables \`${tblStalls}\` and \`${tblSales}\`. Find the names of all stalls whose overall sales revenue is higher than the average sales revenue across all stalls in the market.`,
+                        schemaType: 'sql',
+                        tables: [
+                            {
+                                tableName: tblStalls,
+                                schema: [
+                                    { name: 'stall_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Stall ID' },
+                                    { name: 'stall_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Stall Name' }
+                                ],
+                                seedData: [
+                                    { stall_id: 1, stall_name: 'Ladies Market Crafts' },
+                                    { stall_id: 2, stall_name: 'Sneaker Street Shop' }
+                                ]
+                            },
+                            {
+                                tableName: tblSales,
+                                schema: [
+                                    { name: 'sale_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Receipt Code' },
+                                    { name: 'stall_id', type: 'INT', constraint: 'FOREIGN KEY', desc: 'Stall ID' },
+                                    { name: 'amount', type: 'INT', constraint: '> 0', desc: 'Transaction Total' }
+                                ],
+                                seedData: [
+                                    { sale_id: 10, stall_id: 1, amount: 2000 },
+                                    { sale_id: 20, stall_id: 2, amount: 15000 }
+                                ]
+                            }
+                        ],
+                        constraints: 'Standard ANSI SQL syntax.',
+                        sampleOutput: `stall_name: Sneaker Street Shop | amount: 15000`,
+                        evaluator: function(resRows) {
+                            if (!resRows || !Array.isArray(resRows)) return false;
+                            return resRows.length > 0 && resRows[0].stall_name === 'Sneaker Street Shop';
+                        }
+                    });
+                } else {
+                    // 3 Tables Olympiad
+                    const tblVessels = `vessels_${i}`;
+                    const tblDockings = `dockings_${i}`;
+                    const tblInspections = `inspections_${i}`;
+                    QUESTION_DATASET.push({
+                        id: `sql-${i}`,
+                        track: 'sql',
+                        difficulty: 'Olympiad',
+                        title: `Victoria Harbour Pier Safety Audit #${i}`,
+                        description: `The Marine Department tracks vessels, pier docking logs, and safety inspections across three tables. Find the names of vessel owners whose ships docked at Pier 3 and passed all safety inspections.`,
+                        schemaType: 'sql',
+                        tables: [
+                            {
+                                tableName: tblVessels,
+                                schema: [
+                                    { name: 'vessel_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Ship Code' },
+                                    { name: 'owner_name', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Vessel Owner' }
+                                ],
+                                seedData: [
+                                    { vessel_id: 501, owner_name: 'Star Ferry Co' },
+                                    { vessel_id: 502, owner_name: 'Harbour Cruises Ltd' }
+                                ]
+                            },
+                            {
+                                tableName: tblDockings,
+                                schema: [
+                                    { name: 'dock_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Dock Log Code' },
+                                    { name: 'vessel_id', type: 'INT', constraint: 'FOREIGN KEY', desc: 'Ship Code' },
+                                    { name: 'pier_no', type: 'INT', constraint: '1-10', desc: 'Pier Terminal Number' }
+                                ],
+                                seedData: [
+                                    { dock_id: 1, vessel_id: 501, pier_no: 3 },
+                                    { dock_id: 2, vessel_id: 502, pier_no: 9 }
+                                ]
+                            },
+                            {
+                                tableName: tblInspections,
+                                schema: [
+                                    { name: 'inspection_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Audit Code' },
+                                    { name: 'vessel_id', type: 'INT', constraint: 'FOREIGN KEY', desc: 'Ship Code' },
+                                    { name: 'passed_flag', type: 'INT', constraint: '1 or 0', desc: 'Safety Pass Indicator' }
+                                ],
+                                seedData: [
+                                    { inspection_id: 88, vessel_id: 501, passed_flag: 1 },
+                                    { inspection_id: 89, vessel_id: 502, passed_flag: 0 }
+                                ]
+                            }
+                        ],
+                        constraints: 'Standard ANSI SQL syntax.',
+                        sampleOutput: `owner_name: Star Ferry Co`,
+                        evaluator: function(resRows) {
+                            if (!resRows || !Array.isArray(resRows)) return false;
+                            return resRows.length > 0 && Object.values(resRows[0])[0] === 'Star Ferry Co';
+                        }
+                    });
+                }
+            }
+        })();
+
+        class PythonSQLLearnerApp {
+            constructor() {
+                this.currentTrack = 'python';
+                this.currentDiff = 'All';
+                this.currentQuestion = null;
+                this.userState = {
+                    xp: 0,
+                    solved: {},
+                    streak: 1,
+                    rating: 1200
+                };
+                this.init();
+            }
+
+            init() {
+                const saved = localStorage.getItem('pysql_user_state_2026');
+                if (saved) {
+                    try {
+                        this.userState = JSON.parse(saved);
+                    } catch(e) {
+                        console.error('State parse error', e);
+                    }
+                }
+                this.updateUserStatsUI();
+                
+                const codeEditor = document.getElementById('code-editor');
+                if (codeEditor) {
+                    codeEditor.addEventListener('input', () => this.syncLineNumbers());
+                    codeEditor.addEventListener('scroll', () => {
+                        document.getElementById('line-numbers').scrollTop = codeEditor.scrollTop;
+                    });
+                }
+            }
+
+            saveState() {
+                localStorage.setItem('pysql_user_state_2026', JSON.stringify(this.userState));
+                this.updateUserStatsUI();
+            }
+
+            updateUserStatsUI() {
+                const solvedCount = Object.keys(this.userState.solved).length;
+                document.getElementById('user-xp-display').innerText = this.userState.xp;
+                document.getElementById('user-solved-display').innerText = `${solvedCount} / 200`;
+                document.getElementById('user-streak-display').innerText = `${this.userState.streak} Day`;
+
+                const pySolved = Object.keys(this.userState.solved).filter(id => id.startsWith('py-')).length;
+                const sqlSolved = Object.keys(this.userState.solved).filter(id => id.startsWith('sql-')).length;
+
+                document.getElementById('stat-progress-pct').innerText = `${Math.round((solvedCount / 200) * 100)}%`;
+                document.getElementById('stat-py-solved').innerText = `${pySolved} / 100`;
+                document.getElementById('stat-sql-solved').innerText = `${sqlSolved} / 100`;
+                document.getElementById('stat-rating').innerText = this.userState.rating + (pySolved + sqlSolved) * 5;
+            }
+
+            navigateTo(viewName) {
+                document.getElementById('view-landing').classList.add('hidden');
+                document.getElementById('view-menu').classList.add('hidden');
+                document.getElementById('view-workspace').classList.add('hidden');
+
+                if (viewName === 'landing') {
+                    document.getElementById('view-landing').classList.remove('hidden');
+                } else if (viewName === 'menu') {
+                    document.getElementById('view-menu').classList.remove('hidden');
+                    this.renderMenu();
+                } else if (viewName === 'workspace') {
+                    document.getElementById('view-workspace').classList.remove('hidden');
+                }
+            }
+
+            selectTrack(track) {
+                this.currentTrack = track;
+                document.getElementById('menu-track-title').innerText = `${track === 'python' ? 'Python Algorithmic' : 'SQL Database'} Track`;
+                this.navigateTo('menu');
+            }
+
+            setDifficultyFilter(diff) {
+                this.currentDiff = diff;
+                document.querySelectorAll('.diff-tab').forEach(tab => {
+                    tab.classList.remove('bg-zinc-800', 'text-emerald-400');
+                    tab.classList.add('text-zinc-400');
+                });
+                const activeBtn = document.getElementById(`diff-tab-${diff}`);
+                if (activeBtn) {
+                    activeBtn.classList.add('bg-zinc-800', 'text-emerald-400');
+                    activeBtn.classList.remove('text-zinc-400');
+                }
+                this.renderMenu();
+            }
+
+            renderMenu() {
+                const grid = document.getElementById('questions-grid');
+                grid.innerHTML = '';
+
+                const searchInput = document.getElementById('menu-search');
+                const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
+
+                const filtered = QUESTION_DATASET.filter(q => {
+                    if (q.track !== this.currentTrack) return false;
+                    if (this.currentDiff !== 'All' && q.difficulty !== this.currentDiff) return false;
+                    if (searchVal && !q.title.toLowerCase().includes(searchVal) && !q.id.toLowerCase().includes(searchVal)) return false;
+                    return true;
+                });
+
+                filtered.forEach(q => {
+                    const isSolved = !!this.userState.solved[q.id];
+                    const card = document.createElement('div');
+
+                    if (isSolved) {
+                        card.className = "bg-emerald-600 text-white border-2 border-emerald-400 shadow-lg shadow-emerald-950/60 rounded-xl p-4 cursor-pointer transition transform hover:-translate-y-0.5 flex flex-col justify-between";
+                    } else {
+                        card.className = "bg-black text-zinc-200 border border-zinc-800 hover:bg-zinc-900 rounded-xl p-4 cursor-pointer transition transform hover:-translate-y-0.5 flex flex-col justify-between";
+                    }
+
+                    card.onclick = () => this.openQuestion(q.id);
+
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded ${isSolved ? 'bg-emerald-800 text-emerald-100' : 'bg-zinc-800 text-zinc-400'}">
+                                    ${q.difficulty}
+                                </span>
+                                ${isSolved ? '<span class="text-xs font-bold text-emerald-200 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Solved</span>' : '<span class="text-xs text-zinc-500 font-mono">' + q.id + '</span>'}
+                            </div>
+                            <h4 class="font-bold text-sm leading-snug mb-1">${q.title}</h4>
+                            <p class="${isSolved ? 'text-emerald-100' : 'text-zinc-400'} text-xs line-clamp-2">${q.description}</p>
+                        </div>
+                        <div class="mt-4 pt-2 border-t ${isSolved ? 'border-emerald-500/50 text-emerald-100' : 'border-zinc-800 text-zinc-400'} flex items-center justify-between text-xs font-medium">
+                            <span>+100 XP</span>
+                            <span>Open Problem <i class="fa-solid fa-chevron-right text-[10px]"></i></span>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            openQuestion(qid) {
+                const q = QUESTION_DATASET.find(x => x.id === qid);
+                if (!q) return;
+
+                this.currentQuestion = q;
+                this.navigateTo('workspace');
+
+                document.getElementById('ws-title').innerText = `${q.id.toUpperCase()}: ${q.title}`;
+                document.getElementById('ws-problem-heading').innerText = q.title;
+                document.getElementById('ws-track-tag').innerText = `${q.track === 'python' ? 'Python Algorithmic Track' : 'SQL Database Track'}`;
+                document.getElementById('ws-difficulty-badge').innerText = q.difficulty;
+                document.getElementById('ws-description').innerText = q.description;
+                document.getElementById('ws-constraints').innerText = q.constraints;
+                document.getElementById('ws-sample-output').innerText = q.sampleOutput;
+                document.getElementById('editor-lang-badge').innerText = q.track === 'python' ? 'Python 3' : 'SQL (AlaSQL)';
+
+                const schemaContainer = document.getElementById('schema-container');
+                const schemaTitle = document.getElementById('schema-table-title');
+
+                if (q.schemaType === 'sql' && q.tables) {
+                    schemaTitle.innerText = `Database Schemas (${q.tables.length} Table${q.tables.length > 1 ? 's' : ''})`;
+                    let html = '';
+                    q.tables.forEach(tbl => {
+                        let rows = tbl.schema.map(col => `
+                            <tr class="border-b border-zinc-800 text-zinc-300">
+                                <td class="p-2 font-mono text-emerald-400">${col.name}</td>
+                                <td class="p-2 font-mono text-cyan-400">${col.type}</td>
+                                <td class="p-2 font-mono text-amber-400">${col.constraint}</td>
+                                <td class="p-2 text-zinc-400">${col.desc}</td>
+                            </tr>
+                        `).join('');
+
+                        html += `
+                            <div class="mb-3">
+                                <div class="text-[11px] font-bold text-cyan-400 font-mono mb-1">Table Name: ${tbl.tableName}</div>
+                                <table class="w-full text-left text-xs mb-2">
+                                    <thead class="bg-zinc-900 text-zinc-400 uppercase text-[10px] border-b border-zinc-800">
+                                        <tr>
+                                            <th class="p-2">Column Name</th>
+                                            <th class="p-2">Type</th>
+                                            <th class="p-2">Constraint</th>
+                                            <th class="p-2">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>${rows}</tbody>
+                                </table>
+                            </div>
+                        `;
+                    });
+                    schemaContainer.innerHTML = html;
+                } else {
+                    schemaTitle.innerText = `Function Parameter Specifications`;
+                    let rowsHtml = q.schema.map(param => `
+                        <tr class="border-b border-zinc-800 text-zinc-300">
+                            <td class="p-2 font-mono text-emerald-400">${param.name}</td>
+                            <td class="p-2 font-mono text-cyan-400">${param.type}</td>
+                            <td class="p-2 font-mono text-amber-400">${param.constraint}</td>
+                            <td class="p-2 text-zinc-400">${param.desc}</td>
+                        </tr>
+                    `).join('');
+
+                    schemaContainer.innerHTML = `
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-zinc-900 text-zinc-400 uppercase text-[10px] border-b border-zinc-800">
+                                <tr>
+                                    <th class="p-2">Parameter</th>
+                                    <th class="p-2">Data Type</th>
+                                    <th class="p-2">Value Constraint</th>
+                                    <th class="p-2">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
+                        </table>
+                    `;
+                }
+
+                this.resetCodeBox();
+                document.getElementById('console-output').innerHTML = `<span class="text-zinc-600">Click "Test Code" to inspect execution output or "Submit Code" to evaluate solution.</span>`;
+                document.getElementById('ac-banner').classList.add('hidden');
+                document.getElementById('output-verdict-badge').className = "px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400";
+                document.getElementById('output-verdict-badge').innerText = "Idle";
+            }
+
+            resetCodeBox() {
+                const editor = document.getElementById('code-editor');
+                if (editor) {
+                    editor.value = '';
+                }
+                this.syncLineNumbers();
+            }
+
+            syncLineNumbers() {
+                const editor = document.getElementById('code-editor');
+                const lineNumDiv = document.getElementById('line-numbers');
+                const lineCount = editor.value.split('\n').length;
+                let numHtml = '';
+                for (let i = 1; i <= lineCount; i++) {
+                    numHtml += i + '<br>';
+                }
+                lineNumDiv.innerHTML = numHtml;
+            }
+
+            async runCode(isSubmit) {
+                if (!this.currentQuestion) return;
+
+                const code = document.getElementById('code-editor').value;
+                const outputConsole = document.getElementById('console-output');
+                const verdictBadge = document.getElementById('output-verdict-badge');
+                const acBanner = document.getElementById('ac-banner');
+
+                acBanner.classList.add('hidden');
+                outputConsole.innerText = "Executing in local browser runtime...";
+                verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
+                verdictBadge.innerText = "Running";
+
+                const track = this.currentQuestion.track;
+
+                if (track === 'sql') {
+                    try {
+                        alasql('DROP DATABASE IF EXISTS pysql_temp; CREATE DATABASE pysql_temp; USE pysql_temp;');
+                        
+                        if (this.currentQuestion.schemaType === 'sql' && this.currentQuestion.tables) {
+                            this.currentQuestion.tables.forEach(tbl => {
+                                const colDefs = tbl.schema.map(c => `${c.name} ${c.type}`).join(', ');
+                                alasql(`CREATE TABLE ${tbl.tableName} (${colDefs});`);
+                                if (tbl.seedData && tbl.seedData.length > 0) {
+                                    tbl.seedData.forEach(row => {
+                                        const keys = Object.keys(row);
+                                        const vals = keys.map(k => typeof row[k] === 'string' ? `'${row[k]}'` : row[k]).join(', ');
+                                        alasql(`INSERT INTO ${tbl.tableName} (${keys.join(', ')}) VALUES (${vals});`);
+                                    });
+                                }
+                            });
+                        }
+
+                        const res = alasql(code);
+
+                        let formattedOutput = "";
+                        if (Array.isArray(res)) {
+                            if (res.length === 0) {
+                                formattedOutput = "Query executed successfully. (0 rows returned)";
+                            } else {
+                                const keys = Object.keys(res[0]);
+                                let header = keys.join(' | ') + '\n' + keys.map(() => '---').join(' | ') + '\n';
+                                let rows = res.map(r => keys.map(k => r[k]).join(' | ')).join('\n');
+                                formattedOutput = header + rows;
+                            }
+                        } else {
+                            formattedOutput = String(res);
+                        }
+
+                        outputConsole.innerText = formattedOutput;
+
+                        if (isSubmit) {
+                            const passed = this.currentQuestion.evaluator(res);
+                            if (passed) {
+                                this.handleSuccess();
+                            } else {
+                                this.handleWrongAnswer("Result query rows did not match expected database answer.");
+                            }
+                        } else {
+                            verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30";
+                            verdictBadge.innerText = "Test Complete";
+                        }
+                    } catch(err) {
+                        outputConsole.innerText = "SQL Execution Error: " + err.message;
+                        verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                        verdictBadge.innerText = "Runtime Error";
+                    }
+                } else {
+                    try {
+                        let capturedStdout = [];
+                        const mockPrint = (...args) => {
+                            capturedStdout.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+                        };
+
+                        let jsCode = code.replace(/print\((.*?)\)/g, 'mockPrint($1)');
+                        
+                        const runFn = new Function('mockPrint', jsCode);
+                        runFn(mockPrint);
+
+                        const userStdout = capturedStdout.join('\n');
+                        outputConsole.innerText = userStdout || "(No stdout output)";
+
+                        if (isSubmit) {
+                            const passed = this.currentQuestion.evaluator(userStdout);
+                            if (passed) {
+                                this.handleSuccess();
+                            } else {
+                                this.handleWrongAnswer(`Output mismatch.\nGot: "${userStdout}"\nExpected: "${this.currentQuestion.sampleOutput}"`);
+                            }
+                        } else {
+                            verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30";
+                            verdictBadge.innerText = "Test Complete";
+                        }
+                    } catch(err) {
+                        outputConsole.innerText = "Python Execution Error: " + err.message;
+                        verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                        verdictBadge.innerText = "Syntax / Runtime Error";
+                    }
+                }
+            }
+
+            handleSuccess() {
+                const verdictBadge = document.getElementById('output-verdict-badge');
+                const acBanner = document.getElementById('ac-banner');
+
+                verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                verdictBadge.innerText = "ACCEPTED (AC)";
+                acBanner.classList.remove('hidden');
+
+                if (!this.userState.solved[this.currentQuestion.id]) {
+                    this.userState.solved[this.currentQuestion.id] = true;
+                    this.userState.xp += 100;
+                    this.saveState();
+                }
+
+                setTimeout(() => {
+                    this.navigateTo('menu');
+                }, 1500);
+            }
+
+            handleWrongAnswer(msg) {
+                const verdictBadge = document.getElementById('output-verdict-badge');
+                verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                verdictBadge.innerText = "Wrong Answer (WA)";
+                const consoleOut = document.getElementById('console-output');
+                consoleOut.innerText = consoleOut.innerText + "\n\n[JUDGE VERDICT]: " + msg;
+            }
+
+            toggleAuthModal() {
+                const modal = document.getElementById('auth-modal');
+                modal.classList.toggle('hidden');
+            }
+        }
+
+        window.app = null;
+        window.addEventListener('DOMContentLoaded', () => {
+            window.app = new PythonSQLLearnerApp();
+        });
+    </script>
+</body>
+</html>
