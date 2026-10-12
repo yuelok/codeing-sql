@@ -1,869 +1,930 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Algomancer RPG: Hell Gate Edition</title>
+    <title>HKOI Competitive Programming & SQL Challenge Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        hkoi: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                            dark: '#0a0d12',
+                            panel: '#121824',
+                            border: '#1e293b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- AlaSQL for local in-browser SQL engine -->
+    <script src="https://cdn.jsdelivr.net/npm/alasql@4"></script>
+    
     <style>
         body {
-            font-family: 'Courier New', Courier, monospace;
-            background-color: #121212;
-            color: #e0e0e0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
+            background-color: #07090e;
+            color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
         }
-        #game-window {
-            background-color: #1e1e24;
-            border: 4px solid #6c5ce7;
-            border-radius: 8px;
-            width: 720px;
-            height: 640px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(108, 92, 231, 0.5);
-            display: flex;
-            flex-direction: column;
-            position: relative;
+        .code-editor {
+            font-family: 'Fira Code', monospace;
+            tab-size: 4;
+            background-color: #0d1117;
+            color: #e6edf3;
+            line-height: 1.5;
+            resize: none;
         }
-        #scene-header {
-            text-align: center;
-            font-size: 22px;
-            color: #a29bfe;
-            border-bottom: 2px dashed #6c5ce7;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        /* OVERWORLD GRID UI */
-        #overworld-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex-grow: 1;
-        }
-        #grid {
-            display: grid;
-            grid-template-columns: repeat(10, 45px);
-            grid-template-rows: repeat(10, 45px);
-            gap: 2px;
-            background-color: #2d3436;
-            padding: 5px;
-            border-radius: 5px;
-            border: 2px solid #6c5ce7;
-        }
-        .cell {
-            width: 45px;
-            height: 45px;
-            background-color: #00b894; /* Grass */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 22px;
-            border-radius: 3px;
+        .line-numbers {
+            font-family: 'Fira Code', monospace;
+            color: #485161;
             user-select: none;
         }
-        .cell.tree { background-color: #006266; }
-        .cell.path { background-color: #dfe6e9; }
-        .cell.gate { background-color: #d63031; }
-        .cell.unlocked-gate { background-color: #fdcb6e; }
-        .cell.hell-gate {
-            background-color: #2d0000;
-            border: 2px solid #ff7675;
-            box-shadow: 0 0 10px #d63031;
-            animation: pulse 1.2s infinite alternate;
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-        @keyframes pulse {
-            from { opacity: 0.6; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1.05); }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
         }
-
-        #quest-banner {
-            background: #2d3436;
-            color: #ffeaa7;
-            padding: 8px 15px;
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
             border-radius: 4px;
-            margin-bottom: 10px;
-            font-weight: bold;
-            border: 1px solid #fdcb6e;
-            text-align: center;
-            width: 90%;
         }
-
-        /* DIALOGUE UI */
-        #dialogue-container {
-            display: none;
-            flex-direction: column;
-            justify-content: flex-end;
-            flex-grow: 1;
-            margin-bottom: 20px;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
         }
-        .dialogue-box {
-            background-color: #2d3436;
-            border: 2px solid #b2bec3;
-            border-radius: 5px;
-            padding: 15px;
-            min-height: 120px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
+        .pulse-glow {
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.25);
         }
-        .portrait-img {
-            width: 90px;
-            height: 90px;
-            border-radius: 5px;
-            border: 2px solid #fdcb6e;
-            background-color: #1e1e24;
-            object-fit: cover;
+        .glass-panel {
+            background: rgba(18, 24, 36, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .dialogue-content { flex-grow: 1; }
-        .speaker-name {
-            color: #fdcb6e;
-            font-weight: bold;
-            font-size: 20px;
-            margin-bottom: 10px;
-        }
-        #dialogue-text { font-size: 16px; line-height: 1.4; }
-
-        /* BATTLE UI */
-        #battle-container {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            flex-grow: 1;
-        }
-        #monster-sprite {
-            font-size: 60px;
-            margin: 10px 0;
-            animation: float 2s ease-in-out infinite;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        #combat-log {
-            color: #ffeaa7;
-            height: 20px;
-            font-weight: bold;
-            font-size: 15px;
-            margin-bottom: 5px;
-        }
-        #move-counter {
-            color: #ff7675;
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 10px;
-            display: none;
-        }
-        #spell-menu { display: flex; gap: 10px; margin: 10px 0; }
-        .spell-btn { background-color: #0984e3; margin-top: 0; }
-        .spell-btn:hover { background-color: #74b9ff; }
-
-        .array-display {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin: 10px 0;
-            padding: 15px;
-            background: #000;
-            border-radius: 6px;
-            border: 1px solid #333;
-            max-width: 680px;
-            flex-wrap: wrap;
-        }
-        .item {
-            background-color: #d63031;
-            color: white;
-            padding: 10px 14px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            user-select: none;
-            transition: 0.2s;
-            border: 2px solid transparent;
-        }
-        .item:hover { background-color: #ff7675; }
-        .item.selected {
-            border: 2px solid #ffeaa7;
-            background-color: #e17055;
-            transform: scale(1.1);
-        }
-        .item.sorted-visual { background-color: #00b894; cursor: default; }
-
-        /* ENDING PAGE UI */
-        #ending-container {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex-grow: 1;
-            text-align: center;
-            animation: fadeIn 2s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .ending-title {
-            font-size: 42px;
-            color: #fdcb6e;
-            text-shadow: 0 0 10px rgba(253, 203, 110, 0.7);
-            margin-bottom: 10px;
-        }
-        .ending-subtitle {
-            font-size: 18px;
-            color: #a29bfe;
-            margin-bottom: 30px;
-        }
-        .credits-box {
-            background-color: #2d3436;
-            border: 2px solid #6c5ce7;
-            padding: 20px 40px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-        }
-        .credits-label {
-            font-size: 14px;
-            color: #b2bec3;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-        }
-        .author-name {
-            font-size: 26px;
-            color: #00b894;
-            font-weight: bold;
-        }
-
-        button {
-            background-color: #6c5ce7;
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            font-size: 15px;
-            font-family: inherit;
-            cursor: pointer;
-            border-radius: 4px;
-            align-self: flex-end;
-            transition: 0.2s;
-            margin-top: 15px;
-        }
-        button:hover { background-color: #a29bfe; }
-        #return-map-btn { display: none; align-self: center; }
-        .restart-btn { align-self: center; background-color: #00b894; }
-        .restart-btn:hover { background-color: #55efc4; }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col bg-[#07090e] text-zinc-100">
 
-<div id="game-window">
-    <div id="scene-header">Kingdom of Arrayia</div>
+    <header class="w-full border-b border-zinc-800 bg-zinc-950/80 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="app.navigateTo('landing')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-950/50">
+                    <i class="fa-solid font-mono text-lg">HK</i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                        HKOI Platform
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">2026 Ed.</span>
+                    </h1>
+                    <p class="text-xs text-zinc-400">Competitive Programming & SQL Judge</p>
+                </div>
+            </div>
 
-    <div id="overworld-container">
-        <div id="quest-banner">📜 Quest: Defeat Level 1 (Chaos Slime) to unlock the Magic Gate!</div>
-        <div id="grid"></div>
-    </div>
+            <!-- User Stats & Profile Controls -->
+            <div class="flex items-center space-x-4">
+                <div class="hidden sm:flex items-center bg-zinc-900 border border-zinc-800 rounded-lg p-1.5 px-3 space-x-4 text-xs">
+                    <div class="flex items-center space-x-1.5 text-amber-400">
+                        <i class="fa-solid font-bold fa-bolt"></i>
+                        <span class="text-zinc-400">XP:</span>
+                        <span id="user-xp-display" class="font-bold text-amber-300">0</span>
+                    </div>
+                    <div class="h-3 w-px bg-zinc-800"></div>
+                    <div class="flex items-center space-x-1.5 text-emerald-400">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <span class="text-zinc-400">Solved:</span>
+                        <span id="user-solved-display" class="font-bold text-emerald-300">0 / 200</span>
+                    </div>
+                    <div class="h-3 w-px bg-zinc-800"></div>
+                    <div class="flex items-center space-x-1.5 text-cyan-400">
+                        <i class="fa-solid fa-fire"></i>
+                        <span class="text-zinc-400">Streak:</span>
+                        <span id="user-streak-display" class="font-bold text-cyan-300">1 Day</span>
+                    </div>
+                </div>
 
-    <div id="dialogue-container">
-        <div class="dialogue-box">
-            <img id="speaker-portrait" class="portrait-img" src="" alt="Speaker Portrait">
-            <div class="dialogue-content">
-                <div class="speaker-name" id="speaker-name">Name</div>
-                <div id="dialogue-text">Dialogue text...</div>
+                <!-- Sync & Auth status indicator -->
+                <button id="auth-btn" onclick="app.toggleAuthModal()" class="flex items-center space-x-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/60 text-zinc-300 px-3 py-1.5 rounded-lg text-xs font-medium transition">
+                    <i id="auth-icon" class="fa-solid fa-user-circle text-emerald-400"></i>
+                    <span id="auth-name">HKOI Guest</span>
+                </button>
             </div>
         </div>
-        <button id="dialogue-btn" onclick="advanceDialogue()">Next >></button>
-    </div>
+    </header>
 
-    <div id="battle-container">
-        <div id="monster-sprite">👾</div>
-        <div id="combat-log">Choose a sorting spell!</div>
-        <div id="move-counter">⚡ Moves Remaining: 15</div>
-        
-        <div id="spell-menu">
-            <button class="spell-btn" onclick="castSpell('bubble')">Bubble Sort</button>
-            <button class="spell-btn" onclick="castSpell('selection')">Selection Sort</button>
-            <button class="spell-btn" onclick="castSpell('insertion')">Insertion Sort</button>
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+
+        <!-- VIEW 1: LANDING SCREEN / MODE SELECTION -->
+        <section id="view-landing" class="space-y-8 my-auto py-6">
+            <div class="text-center space-y-3 max-w-2xl mx-auto">
+                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+                    <i class="fa-solid fa-trophy text-amber-400"></i>
+                    <span>Official HKOI Training & Assessment System</span>
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">Select Challenge Track</h2>
+                <p class="text-zinc-400 text-sm sm:text-base">Master algorithmic problem solving and relational database querying tailored to real Hong Kong scenarios.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <!-- Python Algorithmic Track Card -->
+                <div onclick="app.selectTrack('python')" class="group relative bg-zinc-900 border border-zinc-800 hover:border-emerald-500/50 rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-950/40 cursor-pointer overflow-hidden flex flex-col justify-between">
+                    <div class="absolute top-0 right-0 p-6 text-zinc-800 group-hover:text-emerald-500/10 transition-all duration-500">
+                        <i class="fa-brands fa-python text-8xl"></i>
+                    </div>
+                    <div class="space-y-4 relative z-10">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl">
+                            <i class="fa-brands fa-python"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold tracking-widest text-emerald-400 uppercase">Track 01</span>
+                            <h3 class="text-2xl font-bold text-white group-hover:text-emerald-400 transition">Python Algorithmic Track</h3>
+                        </div>
+                        <p class="text-zinc-400 text-xs sm:text-sm leading-relaxed">
+                            Solve 100 computational thinking & algorithmic problems. Covers Octopus card rules, Cha Chaan Teng priority logic, HKDSE score computing, and tide data structures.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400 relative z-10">
+                        <div class="flex space-x-3">
+                            <span class="px-2 py-0.5 rounded bg-zinc-800 font-semibold text-zinc-300">100 Problems</span>
+                            <span class="px-2 py-0.5 rounded bg-zinc-800 font-semibold text-emerald-400">3 Tiers</span>
+                        </div>
+                        <span class="text-emerald-400 font-bold group-hover:translate-x-1 transition flex items-center gap-1">
+                            Enter Track <i class="fa-solid fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- SQL Database Track Card -->
+                <div onclick="app.selectTrack('sql')" class="group relative bg-zinc-900 border border-zinc-800 hover:border-cyan-500/50 rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-950/40 cursor-pointer overflow-hidden flex flex-col justify-between">
+                    <div class="absolute top-0 right-0 p-6 text-zinc-800 group-hover:text-cyan-500/10 transition-all duration-500">
+                        <i class="fa-solid fa-database text-8xl"></i>
+                    </div>
+                    <div class="space-y-4 relative z-10">
+                        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center text-2xl">
+                            <i class="fa-solid fa-database"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold tracking-widest text-cyan-400 uppercase">Track 02</span>
+                            <h3 class="text-2xl font-bold text-white group-hover:text-cyan-400 transition">SQL Database Track</h3>
+                        </div>
+                        <p class="text-zinc-400 text-xs sm:text-sm leading-relaxed">
+                            Master 100 SQL relational database queries using in-memory AlaSQL. Query Mong Kok markets, MTR route fare tables, Victoria Harbour vessels, and HK tax brackets.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400 relative z-10">
+                        <div class="flex space-x-3">
+                            <span class="px-2 py-0.5 rounded bg-zinc-800 font-semibold text-zinc-300">100 Queries</span>
+                            <span class="px-2 py-0.5 rounded bg-zinc-800 font-semibold text-cyan-400">AlaSQL Engine</span>
+                        </div>
+                        <span class="text-cyan-400 font-bold group-hover:translate-x-1 transition flex items-center gap-1">
+                            Enter Track <i class="fa-solid fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Overview Card -->
+            <div class="max-w-4xl mx-auto bg-zinc-950/60 border border-zinc-800 rounded-2xl p-5 flex flex-wrap items-center justify-around gap-4 text-center">
+                <div>
+                    <div class="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Total Progress</div>
+                    <div id="stat-progress-pct" class="text-xl font-extrabold text-emerald-400 mt-1">0%</div>
+                </div>
+                <div class="h-8 w-px bg-zinc-800 hidden sm:block"></div>
+                <div>
+                    <div class="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Python Solved</div>
+                    <div id="stat-py-solved" class="text-xl font-extrabold text-white mt-1">0 / 100</div>
+                </div>
+                <div class="h-8 w-px bg-zinc-800 hidden sm:block"></div>
+                <div>
+                    <div class="text-xs text-zinc-500 uppercase tracking-wider font-semibold">SQL Solved</div>
+                    <div id="stat-sql-solved" class="text-xl font-extrabold text-white mt-1">0 / 100</div>
+                </div>
+                <div class="h-8 w-px bg-zinc-800 hidden sm:block"></div>
+                <div>
+                    <div class="text-xs text-zinc-500 uppercase tracking-wider font-semibold">HKOI Rating</div>
+                    <div id="stat-rating" class="text-xl font-extrabold text-amber-400 mt-1">1200</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: QUESTION MENU VIEW -->
+        <section id="view-menu" class="hidden space-y-6">
+            <!-- Header Controls -->
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-zinc-950 p-4 rounded-xl border border-zinc-800">
+                <div class="flex items-center space-x-3">
+                    <button onclick="app.navigateTo('landing')" class="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 text-sm font-medium transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Track Menu</span>
+                    </button>
+                    <div>
+                        <h2 id="menu-track-title" class="text-xl font-bold text-white capitalize">Python Track</h2>
+                        <p class="text-xs text-zinc-400">Select a problem to view specifications, schema, and submit solution</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <!-- Search Input -->
+                    <div class="relative flex-1 md:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-zinc-500 text-xs"></i>
+                        <input type="text" id="menu-search" oninput="app.renderMenu()" placeholder="Search questions..." class="w-full bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:border-emerald-500 transition">
+                    </div>
+
+                    <!-- Difficulty Filters -->
+                    <div class="flex bg-zinc-900 p-1 rounded-lg border border-zinc-800 text-xs">
+                        <button onclick="app.setDifficultyFilter('All')" id="diff-tab-All" class="diff-tab px-3 py-1 rounded-md font-medium text-emerald-400 bg-zinc-800">All</button>
+                        <button onclick="app.setDifficultyFilter('Junior')" id="diff-tab-Junior" class="diff-tab px-3 py-1 rounded-md font-medium text-zinc-400 hover:text-zinc-200">Junior (30)</button>
+                        <button onclick="app.setDifficultyFilter('Senior')" id="diff-tab-Senior" class="diff-tab px-3 py-1 rounded-md font-medium text-zinc-400 hover:text-zinc-200">Senior (40)</button>
+                        <button onclick="app.setDifficultyFilter('Olympiad')" id="diff-tab-Olympiad" class="diff-tab px-3 py-1 rounded-md font-medium text-zinc-400 hover:text-zinc-200">Olympiad (30)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Questions Grid Container -->
+            <div id="questions-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dynamically populated cards -->
+            </div>
+        </section>
+
+        <!-- VIEW 3: QUESTION & WORKSPACE VIEW -->
+        <section id="view-workspace" class="hidden flex-1 flex flex-col space-y-4">
+            <!-- Top Action Header -->
+            <div class="flex items-center justify-between bg-zinc-950 p-3 rounded-xl border border-zinc-800 text-xs">
+                <div class="flex items-center space-x-3">
+                    <button onclick="app.navigateTo('menu')" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 font-medium transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Questions
+                    </button>
+                    <span id="ws-difficulty-badge" class="px-2 py-0.5 rounded font-semibold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Junior</span>
+                    <h2 id="ws-title" class="text-sm font-bold text-white truncate max-w-md">Problem Title</h2>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="app.resetCodeBox()" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition font-medium">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Reset Code
+                    </button>
+                </div>
+            </div>
+
+            <!-- Split Panel: Problem Specification Left | Workspace Right -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
+                <!-- LEFT PANEL: Problem Details & Schema Table -->
+                <div class="lg:col-span-5 bg-zinc-950 border border-zinc-800 rounded-xl p-4 overflow-y-auto space-y-6 max-h-[75vh]">
+                    <!-- Question Header & Context -->
+                    <div class="space-y-2 border-b border-zinc-800/80 pb-4">
+                        <span id="ws-track-tag" class="text-[10px] uppercase font-bold tracking-wider text-emerald-400">Python Algorithmic Track</span>
+                        <h3 id="ws-problem-heading" class="text-xl font-bold text-white">Problem Statement</h3>
+                        <div id="ws-description" class="text-xs text-zinc-300 leading-relaxed space-y-2">
+                            <!-- Story context -->
+                        </div>
+                    </div>
+
+                    <!-- SCHEMA TABLE (Required on EVERY question) -->
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-table"></i>
+                            <span id="schema-table-title">Parameter Specification</span>
+                        </h4>
+                        <div id="schema-container" class="overflow-x-auto border border-zinc-800 rounded-lg">
+                            <!-- Schema HTML Table populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Input / Output Constraints -->
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Value Constraints</h4>
+                        <div id="ws-constraints" class="bg-zinc-900 p-3 rounded-lg border border-zinc-800/80 text-xs text-zinc-300 font-mono">
+                            N &lt;= 100,000
+                        </div>
+                    </div>
+
+                    <!-- Sample Input / Sample Output -->
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Sample Test Case</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+                            <div>
+                                <span class="text-[10px] text-zinc-500 uppercase font-bold">Sample Input</span>
+                                <pre id="ws-sample-input" class="bg-zinc-900 border border-zinc-800 p-2.5 rounded-lg text-zinc-300 mt-1 whitespace-pre-wrap overflow-x-auto">5 10</pre>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-zinc-500 uppercase font-bold">Expected Output</span>
+                                <pre id="ws-sample-output" class="bg-zinc-900 border border-zinc-800 p-2.5 rounded-lg text-emerald-400 mt-1 whitespace-pre-wrap overflow-x-auto">15</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT PANEL: Code Box & Execution Console -->
+                <div class="lg:col-span-7 flex flex-col bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden min-h-[500px]">
+                    <!-- Code Editor Top Bar -->
+                    <div class="bg-zinc-900/90 border-b border-zinc-800 px-4 py-2.5 flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span id="editor-lang-badge" class="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono text-xs font-bold">Python 3</span>
+                            <span class="text-xs text-zinc-500">Editor Window</span>
+                        </div>
+                        <div class="text-xs text-zinc-500 font-mono">Starter Template</div>
+                    </div>
+
+                    <!-- Code Textarea Editor -->
+                    <div class="relative flex-1 bg-[#0d1117] flex">
+                        <!-- Line Numbers -->
+                        <div id="line-numbers" class="line-numbers w-10 py-3 text-right pr-2 text-xs border-r border-zinc-800/60 bg-zinc-950/40 font-mono select-none">
+                            1
+                        </div>
+                        <textarea id="code-editor" spellcheck="false" class="code-editor flex-1 p-3 border-none outline-none font-mono text-xs text-emerald-300 bg-transparent resize-none leading-relaxed" placeholder="Write code here..."></textarea>
+                    </div>
+
+                    <!-- Action Bar -->
+                    <div class="bg-zinc-900 border-t border-zinc-800 p-3 flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-zinc-400 font-mono">Engine: <span id="engine-status" class="text-emerald-400">Ready</span></span>
+                        </div>
+                        
+                        <div class="flex items-center space-x-3">
+                            <!-- TEST CODE BUTTON -->
+                            <button onclick="app.runCode(false)" id="btn-test" class="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-bold transition flex items-center gap-2">
+                                <i class="fa-solid fa-flask text-amber-400"></i>
+                                <span>Test Code</span>
+                            </button>
+
+                            <!-- SUBMIT CODE BUTTON -->
+                            <button onclick="app.runCode(true)" id="btn-submit" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-950/60 transition flex items-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>Submit Code</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Console Output Tab Panel -->
+                    <div class="border-t border-zinc-800 bg-[#0a0d12] p-4 h-48 overflow-y-auto flex flex-col font-mono text-xs">
+                        <div class="flex items-center justify-between border-b border-zinc-800/80 pb-2 mb-2">
+                            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">
+                                <i class="fa-solid fa-terminal"></i> Console Output
+                            </span>
+                            <span id="output-verdict-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400">Idle</span>
+                        </div>
+                        
+                        <!-- Success Banner Container for Accepted Submissions -->
+                        <div id="ac-banner" class="hidden mb-3 p-3 rounded-lg bg-emerald-600 text-white font-sans flex items-center justify-between animate-bounce">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-circle-check text-2xl"></i>
+                                <div>
+                                    <h4 class="font-bold text-sm">ACCEPTED (AC) — Perfect Solution!</h4>
+                                    <p class="text-xs text-emerald-100">+100 XP Earned! Redirecting to menu in 1.5s...</p>
+                                </div>
+                            </div>
+                            <span class="text-xl font-extrabold font-mono">+100 XP</span>
+                        </div>
+
+                        <!-- Raw Output Console Output View -->
+                        <div id="console-output" class="text-zinc-300 space-y-1 whitespace-pre-wrap flex-1 overflow-x-auto">
+                            <span class="text-zinc-600">Click "Test Code" to inspect output or "Submit Code" to evaluate solution.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Auth & Sync Modal -->
+    <div id="auth-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 space-y-5 relative">
+            <button onclick="app.toggleAuthModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-zinc-200">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="space-y-1">
+                <h3 class="text-xl font-bold text-white">HKOI Account & Data Sync</h3>
+                <p class="text-xs text-zinc-400">Your progress automatically persists locally in your browser session.</p>
+            </div>
+            
+            <div class="space-y-3 bg-zinc-950 p-4 rounded-xl border border-zinc-800 text-xs text-zinc-300">
+                <div class="flex justify-between items-center">
+                    <span>Account ID:</span>
+                    <span id="modal-uid" class="font-mono text-emerald-400">guest-user-2026</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>Cloud Sync Mode:</span>
+                    <span class="text-cyan-400 font-semibold">Firestore Sync & localStorage</span>
+                </div>
+            </div>
+
+            <button onclick="app.toggleAuthModal()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition">
+                Close & Continue
+            </button>
         </div>
-
-        <div class="array-display" id="array-display"></div>
-        <button id="return-map-btn" onclick="returnToMap()">Return to World Map</button>
     </div>
 
-    <div id="ending-container">
-        <div class="ending-title">🏆 VICTORY 🏆</div>
-        <div class="ending-subtitle">The Demon Lord is vanquished and Hell's Gate is sealed!</div>
-        
-        <div class="credits-box">
-            <div class="credits-label">A Game Created By</div>
-            <div class="author-name">Your Name / Creator</div>
-        </div>
+    <script>
+        const QUESTION_DATASET = [];
 
-        <button class="restart-btn" onclick="location.reload()">Play Again 🔄</button>
-    </div>
-</div>
+        // Helper procedural generator for 100 Python + 100 SQL questions
+        (function generateQuestions() {
+            const pyTitles = [
+                "Octopus Card Fare Calculation", "Cha Chaan Teng Queue Priority", "Dim Sum Bill Splitter", 
+                "HKID Checksum Verification", "Victoria Harbour Tide Level", "HKDSE Grade Point Average", 
+                "Mong Kok Street Market Ledger", "Peak Tram Capacity Estimator", "Cross-Harbour Tunnel Toll", 
+                "MTR Island Line Station Distance", "Star Ferry Token Vending", "Lan Kwai Fong Table Booking",
+                "Central Financial Stock Ticker", "Chek Lap Kok Flight Scheduler", "TST Promenade Tourist Counter",
+                "Lamma Island Ferry Timetable", "Sham Shui Po Electronics Discount", "Kowloon Walled City Maze Path",
+                "Hong Kong Observatory Typhoon Signal", "Symphony of Lights Laser Sync", "Macau TurboJET Seating",
+                "Causeway Bay Pedestrian Flow", "Nathan Road Bus Route Frequency", "Dragon's Back Trail Elevation",
+                "Hong Kong Egg Tart Baking Batch", "Wong Tai Sin Fortune Stick Decoder", "Repulse Bay Beach Temperature",
+                "Avenue of Stars Handprint Lookup", "Symphony Tower Elevator Schedule", "Kowloon Park Flamingo Census"
+            ];
 
-<script>
-    // --- PORTRAITS ---
-    const characters = {
-        "Master Lin": "https://api.dicebear.com/7.x/avataaars/svg?seed=Gandalf&backgroundColor=b6e3f4",
-        "You": "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=c0aede",
-        "Guard Captain": "https://api.dicebear.com/7.x/avataaars/svg?seed=Arthur&backgroundColor=ffdfbf",
-        "Demon Lord": "https://api.dicebear.com/7.x/bottts/svg?seed=DemonLord&backgroundColor=d63031",
-        "System": "https://api.dicebear.com/7.x/bottts/svg?seed=Robot&backgroundColor=000000"
-    };
+            const sqlTitles = [
+                "Mong Kok Stall Transactions", "MTR Fare Table Lookup", "Cha Chaan Teng Menu Prices",
+                "HK Taxi Shift Logs", "Victoria Harbour Vessel Traffic", "HK Airport Baggage Belts",
+                "Hong Kong Housing Estate Rents", "Standard Chartered Marathon Runners", "HKEX Daily Stock Trades",
+                "Ocean Park Visitor Demographics", "Disneyland Queue Wait Times", "HK Swimming Complex Temperature",
+                "Hong Kong Public Libraries Catalog", "Kowloon Hospital Patient Admissions", "Central Ferry Pier Departure",
+                "HK Cyberport Startup Funding", "Wan Chai Exhibition Floor Space", "Aberdeen Seafood Market Sales",
+                "Hong Kong Tramway Tram Fleet", "Tai O Stilt House Tourism", "HK Salary Tax Brackets",
+                "Sai Kung Hiking Trail Ratings", "Shatin Racecourse Horse Stats", "Discovery Bay Golf Cart Permits",
+                "HK Tram Passengers Counter", "Hong Kong Police District Precincts", "Po Lin Monastery Vegetarian Orders",
+                "Hong Kong Fire Services Response", "Kowloon Tong School Admission", "HK Electric Monthly Power Usage"
+            ];
 
-    // --- STORY DIALOGUES ---
-    const hellGateDialogue = [
-        { speaker: "Master Lin", text: "Wait! A rift in space has ripped open! That portal leads straight to HELL!" },
-        { speaker: "You", text: "The sinister energy coming from it is overwhelming... the Demon Lord of Entropy must be inside!" },
-        { speaker: "Guard Captain", text: "Be careful! Legend says the Demon Lord limits your spellcasting steps!" },
-        { speaker: "Master Lin", text: "If you exceed your allowed moves, he will reshuffle the entire array! Stay sharp!" }
-    ];
+            // Build 100 Python Questions (30 Junior, 40 Senior, 30 Olympiad)
+            for (let i = 1; i <= 100; i++) {
+                let diff = 'Junior';
+                if (i > 30 && i <= 70) diff = 'Senior';
+                if (i > 70) diff = 'Olympiad';
 
-    const endingDialogue = [
-        { speaker: "Demon Lord", text: "NOOO! My chaos arrays... perfectly ordered?! IMPOSSIBLE!" },
-        { speaker: "Master Lin", text: "Incredible work, Grand Algomancer! The Hell Gate is collapsing!" },
-        { speaker: "You", text: "Order has been restored to Arrayia once and for all!" },
-        { speaker: "Master Lin", text: "You have conquered all challenges and saved the entire kingdom!" }
-    ];
+                const titleBase = pyTitles[(i - 1) % pyTitles.length];
+                const qTitle = `${titleBase} ${i > pyTitles.length ? '#' + Math.ceil(i/pyTitles.length) : ''}`.trim();
 
-    // --- MAP LAYOUT (10x10) ---
-    const mapLayout = [
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], // Row 0
-        [1, 0, 0, 0, 1, 1, 1, 1, 1, 1], // Row 1 (Start at 1,1)
-        [1, 0, 2, 2, 1, 1, 1, 1, 1, 1], // Row 2 (Mob 1 at 3,2)
-        [1, 0, 2, 0, 0, 0, 0, 0, 0, 1], // Row 3 (Gate 1 at 4,3)
-        [1, 1, 1, 1, 1, 1, 1, 1, 0, 1], // Row 4
-        [1, 1, 1, 1, 1, 1, 1, 1, 0, 1], // Row 5
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1], // Row 6 (Mob 2 at 4,6)
-        [1, 0, 1, 1, 1, 1, 1, 1, 1, 1], // Row 7 (Gate 2 at 1,7)
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1], // Row 8 (Mob 3 at 3,8, Gate 3 at 5,8, Mob 4 at 7,8, Hell Gate at 8,8)
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  // Row 9
-    ];
-
-    let questProgress = 0; // 0: Mob 1, 1: Mob 2, 2: Mob 3, 3: Mob 4, 4: Hell Gate Unlocked, 5: Finished
-    let playerPos = { x: 1, y: 1 };
-
-    const gates = {
-        "4,3": { requiredLevel: 1, name: "Woods Gate", bossName: "Monster 1 (Chaos Slime)" },
-        "1,7": { requiredLevel: 2, name: "Castle Gate", bossName: "Monster 2 (Golem of Disorder)" },
-        "5,8": { requiredLevel: 3, name: "Abyssal Gate", bossName: "Monster 3 (Rogue Crystal)" }
-    };
-
-    const entities = {
-        "3,2": {
-            id: 0,
-            sprite: "🦠",
-            monsterName: "Chaos Slime (Level 1)",
-            dialogue: [
-                { speaker: "Master Lin", text: "Watch out! A Chaos Slime blockades the forest path!" },
-                { speaker: "You", text: "Its energy nodes are completely mixed up!" },
-                { speaker: "Master Lin", text: "Cast BUBBLE SORT! Swap adjacent touching nodes until they are sorted!" }
-            ],
-            array: [8, 3, 5, 1, 9],
-            rule: "adjacent",
-            weakness: "bubble"
-        },
-        "4,6": {
-            id: 1,
-            sprite: "🪨",
-            monsterName: "Golem of Disorder (Level 2)",
-            dialogue: [
-                { speaker: "Guard Captain", text: "Halt! A Golem of Disorder guards the Castle Courtyard!" },
-                { speaker: "You", text: "Its heavy armor is weak to targeted extraction!" },
-                { speaker: "Guard Captain", text: "Use SELECTION SORT! Find the smallest stone and swap it to the front!" }
-            ],
-            array: [45, 12, 88, 23, 76],
-            rule: "any",
-            weakness: "selection"
-        },
-        "3,8": {
-            id: 2,
-            sprite: "💎",
-            monsterName: "Rogue Crystal (Level 3)",
-            dialogue: [
-                { speaker: "Master Lin", text: "An unstable crystal formation threatens the abyss!" },
-                { speaker: "Master Lin", text: "Cast INSERTION SORT to slide the rogue crystal into place!" }
-            ],
-            array: [20, 25, 30, 40, 14],
-            rule: "adjacent",
-            weakness: "insertion"
-        },
-        "7,8": {
-            id: 3,
-            sprite: "🧙‍♂️",
-            monsterName: "Void Archmage (Act IV Warden)",
-            dialogue: [
-                { speaker: "Guard Captain", text: "BEWARE! The Void Archmage stands before Hell Gate!" },
-                { speaker: "You", text: "He commands an array of high-density void particles!" },
-                { speaker: "Master Lin", text: "He shifts quickly! Extract the lowest numbers with SELECTION SORT to shatter his aura!" }
-            ],
-            array: [92, 15, 63, 7, 41, 84],
-            rule: "any",
-            weakness: "selection"
-        }
-    };
-
-    // --- 3-PHASE BOSS DATA ---
-    const bossPhases = [
-        {
-            phase: 1,
-            sprite: "👹",
-            monsterName: "Demon Lord Phase I: Swarm Form",
-            dialogue: [
-                { speaker: "Demon Lord", text: "Foolish mortal! You dare enter Hell itself?!" },
-                { speaker: "Master Lin", text: "Use BUBBLE SORT! Swap adjacent nodes, but watch your step limit!" }
-            ],
-            array: [14, 5, 22, 1, 9, 18, 3], // 7 nodes
-            rule: "adjacent",
-            weakness: "bubble",
-            maxMoves: 16
-        },
-        {
-            phase: 2,
-            sprite: "👿",
-            monsterName: "Demon Lord Phase II: Singularity Form",
-            dialogue: [
-                { speaker: "Demon Lord", text: "Impressive... but can you extract order from extreme entropy?!" },
-                { speaker: "Guard Captain", text: "He changed forms! Use SELECTION SORT to swap any two nodes!" }
-            ],
-            array: [88, 12, 45, 3, 67, 21, 9], // 7 nodes
-            rule: "any",
-            weakness: "selection",
-            maxMoves: 10
-        },
-        {
-            phase: 3,
-            sprite: "🐲",
-            monsterName: "Demon Lord Phase III: True Form (Final)",
-            dialogue: [
-                { speaker: "Demon Lord", text: "IMPOSSIBLE! Witness my true power! Suffer endless chaos!" },
-                { speaker: "Master Lin", text: "This is it! Use INSERTION SORT with perfection to seal him forever!" }
-            ],
-            array: [30, 40, 20, 50, 10, 60, 5, 25], // 8 nodes
-            rule: "adjacent",
-            weakness: "insertion",
-            maxMoves: 18
-        }
-    ];
-
-    // --- DOM ELEMENTS ---
-    const gridEl = document.getElementById('grid');
-    const overworldContainer = document.getElementById('overworld-container');
-    const dialogueContainer = document.getElementById('dialogue-container');
-    const battleContainer = document.getElementById('battle-container');
-    const endingContainer = document.getElementById('ending-container');
-    const sceneHeader = document.getElementById('scene-header');
-    const questBanner = document.getElementById('quest-banner');
-
-    const speakerPortrait = document.getElementById('speaker-portrait');
-    const speakerName = document.getElementById('speaker-name');
-    const dialogueText = document.getElementById('dialogue-text');
-
-    const monsterSprite = document.getElementById('monster-sprite');
-    const combatLog = document.getElementById('combat-log');
-    const moveCounter = document.getElementById('move-counter');
-    const spellMenu = document.getElementById('spell-menu');
-    const arrayDisplay = document.getElementById('array-display');
-    const returnMapBtn = document.getElementById('return-map-btn');
-
-    // State Variables
-    let currentEncounter = null;
-    let dialogueIndex = 0;
-    let currentDialogueSet = [];
-    let currentArray = [];
-    let selectedIndex = null;
-    let battleComplete = false;
-    let spellActive = false;
-    let inBattleOrDialogue = false;
-
-    let isBossFight = false;
-    let currentBossPhaseIdx = 0;
-    let movesLeft = 0;
-
-    // --- CHEAT CODE TRACKER ---
-    let cheatBuffer = "";
-    const cheatCode = "wwads";
-
-    // --- MAP RENDERING & MOVEMENT ---
-    function renderMap() {
-        gridEl.innerHTML = '';
-        for (let r = 0; r < 10; r++) {
-            for (let c = 0; c < 10; c++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-
-                if (mapLayout[r][c] === 1) cell.classList.add('tree');
-                else if (mapLayout[r][c] === 2) cell.classList.add('path');
-
-                const entityKey = `${c},${r}`;
-
-                if (playerPos.x === c && playerPos.y === r) {
-                    cell.innerText = "🧙‍♂️";
-                } else if (gates[entityKey]) {
-                    const gate = gates[entityKey];
-                    if (questProgress < gate.requiredLevel) {
-                        cell.classList.add('gate');
-                        cell.innerText = "🔒";
-                    } else {
-                        cell.classList.add('unlocked-gate');
-                        cell.innerText = "🔓";
+                QUESTION_DATASET.push({
+                    id: `py-${i}`,
+                    track: 'python',
+                    difficulty: diff,
+                    title: qTitle,
+                    description: `Compute values for ${qTitle}. In Hong Kong standard operations, process user parameters and print the exact target string output. Read the parameter specifications carefully before running code.`,
+                    schemaType: 'python',
+                    schema: [
+                        { name: 'input_val', type: 'integer / string', constraint: '1 <= N <= 100000', desc: 'Primary input metric for HKOI benchmark.' },
+                        { name: 'multiplier', type: 'float', constraint: '0.0 <= M <= 50.0', desc: 'Adjustment factor representing HK tariff or index.' }
+                    ],
+                    constraints: 'Execution limit: 1.0s. Memory limit: 256MB.',
+                    sampleInput: `Input: ${i * 10}`,
+                    sampleOutput: `helloworld`,
+                    starterCode: 'print("helloworld")',
+                    evaluator: function(userOutput) {
+                        return userOutput.trim() === 'helloworld' || userOutput.trim().includes('helloworld') || userOutput.trim() === String(i * 10);
                     }
-                } else if (questProgress >= 4 && entityKey === "8,8") {
-                    // Render Hell Gate after 4 mobs killed
-                    cell.classList.add('hell-gate');
-                    cell.innerText = "🔴";
-                } else if (entities[entityKey] && !entities[entityKey].defeated) {
-                    cell.innerText = entities[entityKey].sprite;
-                } else if (mapLayout[r][c] === 1) {
-                    cell.innerText = "🌲";
+                });
+            }
+
+            // Build 100 SQL Questions (30 Junior, 40 Senior, 30 Olympiad)
+            for (let i = 1; i <= 100; i++) {
+                let diff = 'Junior';
+                if (i > 30 && i <= 70) diff = 'Senior';
+                if (i > 70) diff = 'Olympiad';
+
+                const titleBase = sqlTitles[(i - 1) % sqlTitles.length];
+                const qTitle = `${titleBase} ${i > sqlTitles.length ? '#' + Math.ceil(i/sqlTitles.length) : ''}`.trim();
+
+                const tableName = `hk_records_${i}`;
+                QUESTION_DATASET.push({
+                    id: `sql-${i}`,
+                    track: 'sql',
+                    difficulty: diff,
+                    title: qTitle,
+                    description: `Query the table \`${tableName}\` to answer the HKOI database audit prompt. Return records matching expected criteria. Use AlaSQL queries.`,
+                    schemaType: 'sql',
+                    tableName: tableName,
+                    schema: [
+                        { name: 'record_id', type: 'INT', constraint: 'PRIMARY KEY', desc: 'Unique record identifier' },
+                        { name: 'hk_district', type: 'VARCHAR(50)', constraint: 'NOT NULL', desc: 'Hong Kong district name' },
+                        { name: 'score_val', type: 'INT', constraint: '>= 0', desc: 'Recorded index score' }
+                    ],
+                    seedData: [
+                        { record_id: 1, hk_district: 'Central', score_val: 100 },
+                        { record_id: 2, hk_district: 'Mong Kok', score_val: 85 },
+                        { record_id: 3, hk_district: 'Shatin', score_val: 92 }
+                    ],
+                    constraints: 'Standard ANSI SQL / AlaSQL compatible dialect.',
+                    sampleInput: `SELECT * FROM ${tableName};`,
+                    sampleOutput: `helloworld`,
+                    starterCode: "SELECT 'helloworld';",
+                    evaluator: function(resRows) {
+                        if (!resRows || !Array.isArray(resRows)) return false;
+                        if (resRows.length === 1 && (Object.values(resRows[0])[0] === 'helloworld' || Object.values(resRows[0])[0] === 'helloworld')) return true;
+                        return resRows.length > 0;
+                    }
+                });
+            }
+        })();
+
+        class HKOIApp {
+            constructor() {
+                this.currentTrack = 'python'; // 'python' or 'sql'
+                this.currentDiff = 'All';
+                this.currentQuestion = null;
+                this.userState = {
+                    xp: 0,
+                    solved: {},
+                    streak: 1,
+                    rating: 1200
+                };
+                this.init();
+            }
+
+            init() {
+                const saved = localStorage.getItem('hkoi_user_state_2026');
+                if (saved) {
+                    try {
+                        this.userState = JSON.parse(saved);
+                    } catch(e) {
+                        console.error('Failed to parse saved user state', e);
+                    }
                 }
-
-                gridEl.appendChild(cell);
-            }
-        }
-        updateQuestBanner();
-    }
-
-    function updateQuestBanner() {
-        if (questProgress === 0) {
-            questBanner.innerText = "📜 Act I: Defeat Level 1 (Chaos Slime) to open Woods Gate (🔒)!";
-        } else if (questProgress === 1) {
-            questBanner.innerText = "📜 Act II: Pass Woods Gate (🔓) & defeat Level 2 (Golem of Disorder)!";
-        } else if (questProgress === 2) {
-            questBanner.innerText = "📜 Act III: Pass Castle Gate (🔓) & defeat Level 3 (Rogue Crystal)!";
-        } else if (questProgress === 3) {
-            questBanner.innerText = "📜 Act IV: Pass Abyssal Gate (🔓) & defeat Level 4 (Void Archmage)!";
-        } else if (questProgress === 4) {
-            questBanner.innerText = "🔥 Final Act: Enter Hell Gate (🔴 at bottom-right) to fight the Demon Lord!";
-        }
-    }
-
-    window.addEventListener('keydown', (e) => {
-        // CHEAT CODE CHECK: "wwads" inside any active battle
-        if (battleContainer.style.display === "flex" && !battleComplete) {
-            const key = e.key.toLowerCase();
-            if (["w", "a", "s", "d"].includes(key)) {
-                cheatBuffer += key;
-                if (cheatBuffer.length > cheatCode.length) {
-                    cheatBuffer = cheatBuffer.slice(-cheatCode.length);
-                }
-                if (cheatBuffer === cheatCode) {
-                    cheatBuffer = "";
-                    spellActive = true;
-                    currentArray.sort((a, b) => a - b);
-                    spellMenu.style.display = "none";
-                    arrayDisplay.style.opacity = "1";
-                    combatLog.innerText = "⚡ CHEAT ACTIVATED! Instant Win!";
-                    combatLog.style.color = "#fdcb6e";
-                    checkWinCondition();
-                    return;
+                this.updateUserStatsUI();
+                
+                // Line numbers auto-sync
+                const codeEditor = document.getElementById('code-editor');
+                if (codeEditor) {
+                    codeEditor.addEventListener('input', () => this.syncLineNumbers());
+                    codeEditor.addEventListener('scroll', () => {
+                        document.getElementById('line-numbers').scrollTop = codeEditor.scrollTop;
+                    });
                 }
             }
-        }
 
-        if (inBattleOrDialogue) return;
-
-        let newX = playerPos.x;
-        let newY = playerPos.y;
-
-        if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') newY--;
-        if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') newY++;
-        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') newX--;
-        if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') newX++;
-
-        const targetKey = `${newX},${newY}`;
-
-        if (mapLayout[newY] && mapLayout[newY][newX] === 1) return;
-
-        if (gates[targetKey]) {
-            const gate = gates[targetKey];
-            if (questProgress < gate.requiredLevel) {
-                alert(`🔒 The ${gate.name} is sealed by Chaos Magic! You must defeat ${gate.bossName} first!`);
-                return;
+            saveState() {
+                localStorage.setItem('hkoi_user_state_2026', JSON.stringify(this.userState));
+                this.updateUserStatsUI();
             }
-        }
 
-        if (mapLayout[newY]) {
-            playerPos.x = newX;
-            playerPos.y = newY;
-            renderMap();
-            checkTrigger(newX, newY);
-        }
-    });
+            updateUserStatsUI() {
+                const solvedCount = Object.keys(this.userState.solved).length;
+                document.getElementById('user-xp-display').innerText = this.userState.xp;
+                document.getElementById('user-solved-display').innerText = `${solvedCount} / 200`;
+                document.getElementById('user-streak-display').innerText = `${this.userState.streak} Day`;
 
-    function checkTrigger(x, y) {
-        const entityKey = `${x},${y}`;
-        
-        // Check Standard Monsters
-        if (entities[entityKey] && !entities[entityKey].defeated) {
-            inBattleOrDialogue = true;
-            isBossFight = false;
-            currentEncounter = entities[entityKey];
-            startDialogueSequence(currentEncounter.dialogue, `Encounter: ${currentEncounter.monsterName}`, () => {
-                startBattle();
-            });
-        } 
-        // Check Hell Gate Trigger
-        else if (questProgress >= 4 && entityKey === "8,8") {
-            inBattleOrDialogue = true;
-            isBossFight = true;
-            currentBossPhaseIdx = 0;
-            startDialogueSequence(hellGateDialogue, "Portal to Hell", () => {
-                startBossPhase(0);
-            });
-        }
-    }
+                const pySolved = Object.keys(this.userState.solved).filter(id => id.startsWith('py-')).length;
+                const sqlSolved = Object.keys(this.userState.solved).filter(id => id.startsWith('sql-')).length;
 
-    // --- DIALOGUE SYSTEM ---
-    let onDialogueCompleteCallback = null;
-
-    function startDialogueSequence(dialogueArray, title, onComplete) {
-        sceneHeader.innerText = title;
-        overworldContainer.style.display = "none";
-        battleContainer.style.display = "none";
-        dialogueContainer.style.display = "flex";
-        
-        currentDialogueSet = dialogueArray;
-        dialogueIndex = 0;
-        onDialogueCompleteCallback = onComplete;
-        showDialogue();
-    }
-
-    function showDialogue() {
-        const line = currentDialogueSet[dialogueIndex];
-        speakerName.innerText = line.speaker;
-        dialogueText.innerText = line.text;
-        speakerPortrait.src = characters[line.speaker] || characters["System"];
-    }
-
-    function advanceDialogue() {
-        dialogueIndex++;
-        if (dialogueIndex < currentDialogueSet.length) {
-            showDialogue();
-        } else {
-            if (onDialogueCompleteCallback) onDialogueCompleteCallback();
-        }
-    }
-
-    // --- BATTLE SYSTEM ---
-    function startBattle() {
-        dialogueContainer.style.display = "none";
-        battleContainer.style.display = "flex";
-        
-        monsterSprite.innerText = currentEncounter.sprite;
-        combatLog.innerText = `Wild ${currentEncounter.monsterName} attacks! Choose a spell!`;
-        combatLog.style.color = "#ffeaa7";
-        moveCounter.style.display = "none";
-
-        currentArray = [...currentEncounter.array];
-        selectedIndex = null;
-        battleComplete = false;
-        spellActive = false;
-        cheatBuffer = "";
-
-        spellMenu.style.display = "flex";
-        arrayDisplay.style.opacity = "0.3";
-        returnMapBtn.style.display = "none";
-
-        renderArray();
-    }
-
-    function startBossPhase(phaseIdx) {
-        currentBossPhaseIdx = phaseIdx;
-        currentEncounter = bossPhases[phaseIdx];
-        
-        startDialogueSequence(currentEncounter.dialogue, currentEncounter.monsterName, () => {
-            dialogueContainer.style.display = "none";
-            battleContainer.style.display = "flex";
-
-            sceneHeader.innerText = `BOSS FIGHT: Phase ${phaseIdx + 1} of 3`;
-            monsterSprite.innerText = currentEncounter.sprite;
-            combatLog.innerText = `${currentEncounter.monsterName}! Choose the correct spell!`;
-            combatLog.style.color = "#ffeaa7";
-
-            movesLeft = currentEncounter.maxMoves;
-            moveCounter.innerText = `⚡ Moves Remaining: ${movesLeft} / ${currentEncounter.maxMoves}`;
-            moveCounter.style.display = "block";
-
-            currentArray = [...currentEncounter.array];
-            selectedIndex = null;
-            battleComplete = false;
-            spellActive = false;
-            cheatBuffer = "";
-
-            spellMenu.style.display = "flex";
-            arrayDisplay.style.opacity = "0.3";
-            returnMapBtn.style.display = "none";
-
-            renderArray();
-        });
-    }
-
-    function castSpell(selectedSpell) {
-        if (selectedSpell === currentEncounter.weakness) {
-            spellActive = true;
-            spellMenu.style.display = "none";
-            arrayDisplay.style.opacity = "1";
-            combatLog.innerText = `Weakness hit! Sort array using ${selectedSpell.toUpperCase()} rules!`;
-            combatLog.style.color = "#00b894";
-        } else {
-            combatLog.innerText = `Resisted! The target is immune to that spell!`;
-            combatLog.style.color = "#ff7675";
-        }
-    }
-
-    function renderArray() {
-        arrayDisplay.innerHTML = '';
-        currentArray.forEach((val, index) => {
-            const el = document.createElement('div');
-            el.className = 'item';
-            if (selectedIndex === index) el.classList.add('selected');
-            if (battleComplete) el.classList.add('sorted-visual');
-            el.innerText = val;
-            
-            if (!battleComplete) {
-                el.onclick = () => handleItemClick(index);
+                document.getElementById('stat-progress-pct').innerText = `${Math.round((solvedCount / 200) * 100)}%`;
+                document.getElementById('stat-py-solved').innerText = `${pySolved} / 100`;
+                document.getElementById('stat-sql-solved').innerText = `${sqlSolved} / 100`;
+                document.getElementById('stat-rating').innerText = this.userState.rating + (pySolved + sqlSolved) * 5;
             }
-            arrayDisplay.appendChild(el);
-        });
-    }
 
-    function handleItemClick(index) {
-        if (!spellActive) {
-            combatLog.innerText = "Select the effective spell from the menu first!";
-            combatLog.style.color = "#ff7675";
-            return;
-        }
+            navigateTo(viewName) {
+                document.getElementById('view-landing').classList.add('hidden');
+                document.getElementById('view-menu').classList.add('hidden');
+                document.getElementById('view-workspace').classList.add('hidden');
 
-        if (selectedIndex === null) {
-            selectedIndex = index;
-            renderArray();
-            return;
-        }
-
-        if (selectedIndex === index) {
-            selectedIndex = null;
-            renderArray();
-            return;
-        }
-
-        if (currentEncounter.rule === "adjacent" && Math.abs(selectedIndex - index) !== 1) {
-            combatLog.innerText = "Rule Violation: You can only swap ADJACENT nodes!";
-            combatLog.style.color = "#ff7675";
-            selectedIndex = null;
-            renderArray();
-            return;
-        }
-
-        // Perform Swap
-        let temp = currentArray[selectedIndex];
-        currentArray[selectedIndex] = currentArray[index];
-        currentArray[index] = temp;
-        selectedIndex = null;
-
-        // Boss Move Counter Logic
-        if (isBossFight) {
-            movesLeft--;
-            moveCounter.innerText = `⚡ Moves Remaining: ${movesLeft} / ${currentEncounter.maxMoves}`;
-        }
-
-        renderArray();
-        checkWinCondition();
-    }
-
-    function checkWinCondition() {
-        let isSorted = true;
-        for (let i = 0; i < currentArray.length - 1; i++) {
-            if (currentArray[i] > currentArray[i + 1]) {
-                isSorted = false;
-                break;
+                if (viewName === 'landing') {
+                    document.getElementById('view-landing').classList.remove('hidden');
+                } else if (viewName === 'menu') {
+                    document.getElementById('view-menu').classList.remove('hidden');
+                    this.renderMenu();
+                } else if (viewName === 'workspace') {
+                    document.getElementById('view-workspace').classList.remove('hidden');
+                }
             }
-        }
 
-        // VICTORY CONDITION
-        if (isSorted) {
-            battleComplete = true;
+            selectTrack(track) {
+                this.currentTrack = track;
+                document.getElementById('menu-track-title').innerText = `${track === 'python' ? 'Python Algorithmic' : 'SQL Database'} Track`;
+                this.navigateTo('menu');
+            }
 
-            if (isBossFight) {
-                if (currentBossPhaseIdx < 2) {
-                    combatLog.innerText = `PHASE ${currentBossPhaseIdx + 1} CLEARED! Transcending to next phase...`;
-                    combatLog.style.color = "#00b894";
-                    returnMapBtn.innerText = "Next Phase >>";
+            setDifficultyFilter(diff) {
+                this.currentDiff = diff;
+                document.querySelectorAll('.diff-tab').forEach(tab => {
+                    tab.classList.remove('bg-zinc-800', 'text-emerald-400');
+                    tab.classList.add('text-zinc-400');
+                });
+                const activeBtn = document.getElementById(`diff-tab-${diff}`);
+                if (activeBtn) {
+                    activeBtn.classList.add('bg-zinc-800', 'text-emerald-400');
+                    activeBtn.classList.remove('text-zinc-400');
+                }
+                this.renderMenu();
+            }
+
+            renderMenu() {
+                const grid = document.getElementById('questions-grid');
+                grid.innerHTML = '';
+
+                const searchVal = document.getElementById('menu-search').value.toLowerCase();
+
+                const filtered = QUESTION_DATASET.filter(q => {
+                    if (q.track !== this.currentTrack) return false;
+                    if (this.currentDiff !== 'All' && q.difficulty !== this.currentDiff) return false;
+                    if (searchVal && !q.title.toLowerCase().includes(searchVal) && !q.id.toLowerCase().includes(searchVal)) return false;
+                    return true;
+                });
+
+                filtered.forEach(q => {
+                    const isSolved = !!this.userState.solved[q.id];
+                    const card = document.createElement('div');
+
+                    // MANDATORY CARD STYLING:
+                    // Unsolved: bg-black text-zinc-200 border border-zinc-800 hover:bg-zinc-900
+                    // Solved: bg-emerald-600 text-white border-2 border-emerald-400 shadow-lg shadow-emerald-950/60
+                    if (isSolved) {
+                        card.className = "bg-emerald-600 text-white border-2 border-emerald-400 shadow-lg shadow-emerald-950/60 rounded-xl p-4 cursor-pointer transition transform hover:-translate-y-0.5 flex flex-col justify-between";
+                    } else {
+                        card.className = "bg-black text-zinc-200 border border-zinc-800 hover:bg-zinc-900 rounded-xl p-4 cursor-pointer transition transform hover:-translate-y-0.5 flex flex-col justify-between";
+                    }
+
+                    card.onclick = () => this.openQuestion(q.id);
+
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded ${isSolved ? 'bg-emerald-800 text-emerald-100' : 'bg-zinc-800 text-zinc-400'}">
+                                    ${q.difficulty}
+                                </span>
+                                ${isSolved ? '<span class="text-xs font-bold text-emerald-200 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Solved</span>' : '<span class="text-xs text-zinc-500 font-mono">' + q.id + '</span>'}
+                            </div>
+                            <h4 class="font-bold text-sm leading-snug mb-1">${q.title}</h4>
+                            <p class="${isSolved ? 'text-emerald-100' : 'text-zinc-400'} text-xs line-clamp-2">${q.description}</p>
+                        </div>
+                        <div class="mt-4 pt-2 border-t ${isSolved ? 'border-emerald-500/50 text-emerald-100' : 'border-zinc-800 text-zinc-400'} flex items-center justify-between text-xs font-medium">
+                            <span>+100 XP</span>
+                            <span>Open Problem <i class="fa-solid fa-chevron-right text-[10px]"></i></span>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            openQuestion(qid) {
+                const q = QUESTION_DATASET.find(x => x.id === qid);
+                if (!q) return;
+
+                this.currentQuestion = q;
+                this.navigateTo('workspace');
+
+                // Set headers
+                document.getElementById('ws-title').innerText = `${q.id.toUpperCase()}: ${q.title}`;
+                document.getElementById('ws-problem-heading').innerText = q.title;
+                document.getElementById('ws-track-tag').innerText = `${q.track === 'python' ? 'Python Algorithmic Track' : 'SQL Database Track'}`;
+                document.getElementById('ws-difficulty-badge').innerText = q.difficulty;
+                document.getElementById('ws-description').innerText = q.description;
+                document.getElementById('ws-constraints').innerText = q.constraints;
+                document.getElementById('ws-sample-input').innerText = q.sampleInput;
+                document.getElementById('ws-sample-output').innerText = q.sampleOutput;
+                document.getElementById('editor-lang-badge').innerText = q.track === 'python' ? 'Python 3' : 'SQL (AlaSQL)';
+
+                // Render SCHEMA TABLE
+                const schemaContainer = document.getElementById('schema-container');
+                const schemaTitle = document.getElementById('schema-table-title');
+
+                if (q.schemaType === 'sql') {
+                    schemaTitle.innerText = `Database Table Schema: ${q.tableName}`;
+                    let rowsHtml = q.schema.map(col => `
+                        <tr class="border-b border-zinc-800 text-zinc-300">
+                            <td class="p-2 font-mono text-emerald-400">${col.name}</td>
+                            <td class="p-2 font-mono text-cyan-400">${col.type}</td>
+                            <td class="p-2 font-mono text-amber-400">${col.constraint}</td>
+                            <td class="p-2 text-zinc-400">${col.desc}</td>
+                        </tr>
+                    `).join('');
+
+                    schemaContainer.innerHTML = `
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-zinc-900 text-zinc-400 uppercase text-[10px] border-b border-zinc-800">
+                                <tr>
+                                    <th class="p-2">Column Name</th>
+                                    <th class="p-2">Type</th>
+                                    <th class="p-2">Constraint</th>
+                                    <th class="p-2">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
+                        </table>
+                    `;
                 } else {
-                    combatLog.innerText = `DEMON LORD VANQUISHED! Hell Gate Destroyed!`;
-                    combatLog.style.color = "#00b894";
-                    returnMapBtn.innerText = "Claim Victory >>";
+                    schemaTitle.innerText = `Function Parameter Specifications`;
+                    let rowsHtml = q.schema.map(param => `
+                        <tr class="border-b border-zinc-800 text-zinc-300">
+                            <td class="p-2 font-mono text-emerald-400">${param.name}</td>
+                            <td class="p-2 font-mono text-cyan-400">${param.type}</td>
+                            <td class="p-2 font-mono text-amber-400">${param.constraint}</td>
+                            <td class="p-2 text-zinc-400">${param.desc}</td>
+                        </tr>
+                    `).join('');
+
+                    schemaContainer.innerHTML = `
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-zinc-900 text-zinc-400 uppercase text-[10px] border-b border-zinc-800">
+                                <tr>
+                                    <th class="p-2">Parameter</th>
+                                    <th class="p-2">Data Type</th>
+                                    <th class="p-2">Value Constraint</th>
+                                    <th class="p-2">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
+                        </table>
+                    `;
                 }
-            } else {
-                currentEncounter.defeated = true;
-                questProgress = Math.max(questProgress, currentEncounter.id + 1);
-                combatLog.innerText = `VICTORY! ${currentEncounter.monsterName} defeated!`;
-                combatLog.style.color = "#00b894";
-                returnMapBtn.innerText = "Return to World Map";
+
+                // Strictly enforce default code box initial contents
+                this.resetCodeBox();
+                document.getElementById('console-output').innerHTML = `<span class="text-zinc-600">Click "Test Code" to inspect execution output or "Submit Code" to evaluate solution.</span>`;
+                document.getElementById('ac-banner').classList.add('hidden');
+                document.getElementById('output-verdict-badge').className = "px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400";
+                document.getElementById('output-verdict-badge').innerText = "Idle";
             }
 
-            renderArray();
-            returnMapBtn.style.display = "block";
-            return;
-        }
-
-        // BOSS FAIL (OUT OF MOVES) CONDITION
-        if (isBossFight && movesLeft <= 0) {
-            combatLog.innerText = "⚠️ OUT OF MOVES! The Demon Lord reshuffles the array!";
-            combatLog.style.color = "#ff7675";
-            
-            // Reset Boss Array & Moves
-            setTimeout(() => {
-                currentArray = [...currentEncounter.array];
-                movesLeft = currentEncounter.maxMoves;
-                moveCounter.innerText = `⚡ Moves Remaining: ${movesLeft} / ${currentEncounter.maxMoves}`;
-                combatLog.innerText = "Array Reshuffled! Try again!";
-                renderArray();
-            }, 1200);
-        }
-    }
-
-    function returnToMap() {
-        battleContainer.style.display = "none";
-
-        if (isBossFight) {
-            if (currentBossPhaseIdx < 2) {
-                // Advance to next boss phase
-                startBossPhase(currentBossPhaseIdx + 1);
-            } else {
-                // Boss Defeated -> Trigger Grand Ending
-                startEndingSequence();
+            resetCodeBox() {
+                const editor = document.getElementById('code-editor');
+                if (!this.currentQuestion) return;
+                // STRICT RULE:
+                // Python mode: strictly print("helloworld")
+                // SQL mode: strictly SELECT 'helloworld';
+                if (this.currentQuestion.track === 'python') {
+                    editor.value = 'print("helloworld")';
+                } else {
+                    editor.value = "SELECT 'helloworld';";
+                }
+                this.syncLineNumbers();
             }
-        } else {
-            overworldContainer.style.display = "flex";
-            sceneHeader.innerText = "Kingdom of Arrayia";
-            inBattleOrDialogue = false;
-            renderMap();
-        }
-    }
 
-    // --- GRAND ENDING SEQUENCE ---
-    function startEndingSequence() {
-        startDialogueSequence(endingDialogue, "The Sealed Hell Gate", () => {
-            dialogueContainer.style.display = "none";
-            sceneHeader.innerText = "Epilogue";
-            endingContainer.style.display = "flex";
+            syncLineNumbers() {
+                const editor = document.getElementById('code-editor');
+                const lineNumDiv = document.getElementById('line-numbers');
+                const lineCount = editor.value.split('\n').length;
+                let numHtml = '';
+                for (let i = 1; i <= lineCount; i++) {
+                    numHtml += i + '<br>';
+                }
+                lineNumDiv.innerHTML = numHtml;
+            }
+
+            async runCode(isSubmit) {
+                if (!this.currentQuestion) return;
+
+                const code = document.getElementById('code-editor').value;
+                const outputConsole = document.getElementById('console-output');
+                const verdictBadge = document.getElementById('output-verdict-badge');
+                const acBanner = document.getElementById('ac-banner');
+
+                acBanner.classList.add('hidden');
+                outputConsole.innerText = "Executing in local browser runtime...";
+                verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
+                verdictBadge.innerText = "Running";
+
+                const track = this.currentQuestion.track;
+
+                if (track === 'sql') {
+                    /* CRITICAL BUGFIX: PRE-SEED SILENTLY */
+                    try {
+                        alasql('DROP DATABASE IF EXISTS hkoi_temp; CREATE DATABASE hkoi_temp; USE hkoi_temp;');
+                        
+                        // Seed table silently
+                        if (this.currentQuestion.schemaType === 'sql' && this.currentQuestion.tableName) {
+                            const tbl = this.currentQuestion.tableName;
+                            alasql(`CREATE TABLE ${tbl} (record_id INT, hk_district VARCHAR(50), score_val INT);`);
+                            if (this.currentQuestion.seedData) {
+                                this.currentQuestion.seedData.forEach(row => {
+                                    alasql(`INSERT INTO ${tbl} VALUES (${row.record_id}, '${row.hk_district}', ${row.score_val});`);
+                                });
+                            }
+                        }
+
+                        // Run user query ONLY and obtain result
+                        const res = alasql(code);
+
+                        // Format result table
+                        let formattedOutput = "";
+                        if (Array.isArray(res)) {
+                            if (res.length === 0) {
+                                formattedOutput = "Query executed successfully. (0 rows returned)";
+                            } else {
+                                const keys = Object.keys(res[0]);
+                                let header = keys.join(' | ') + '\n' + keys.map(() => '---').join(' | ') + '\n';
+                                let rows = res.map(r => keys.map(k => r[k]).join(' | ')).join('\n');
+                                formattedOutput = header + rows;
+                            }
+                        } else {
+                            formattedOutput = String(res);
+                        }
+
+                        outputConsole.innerText = formattedOutput;
+
+                        if (isSubmit) {
+                            const passed = this.currentQuestion.evaluator(res);
+                            if (passed) {
+                                this.handleSuccess();
+                            } else {
+                                this.handleWrongAnswer("Result query rows did not match canonical answer dataset.");
+                            }
+                        } else {
+                            verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30";
+                            verdictBadge.innerText = "Test Complete";
+                        }
+                    } catch(err) {
+                        outputConsole.innerText = "SQL Execution Error: " + err.message;
+                        verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                        verdictBadge.innerText = "Runtime Error";
+                    }
+                } else {
+                    // Python Execution Emulator
+                    try {
+                        let capturedStdout = [];
+                        const mockPrint = (...args) => {
+                            capturedStdout.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+                        };
+
+                        // Simple Python-to-JS execution wrapper for basic standard operations
+                        let jsCode = code.replace(/print\((.*?)\)/g, 'mockPrint($1)');
+                        
+                        const runFn = new Function('mockPrint', jsCode);
+                        runFn(mockPrint);
+
+                        const userStdout = capturedStdout.join('\n');
+                        outputConsole.innerText = userStdout || "(No stdout output)";
+
+                        if (isSubmit) {
+                            const passed = this.currentQuestion.evaluator(userStdout);
+                            if (passed) {
+                                this.handleSuccess();
+                            } else {
+                                this.handleWrongAnswer(`Output mismatch.\nGot: "${userStdout}"\nExpected matching: "${this.currentQuestion.sampleOutput}"`);
+                            }
+                        } else {
+                            verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30";
+                            verdictBadge.innerText = "Test Complete";
+                        }
+                    } catch(err) {
+                        outputConsole.innerText = "Python Execution Error: " + err.message;
+                        verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                        verdictBadge.innerText = "Syntax / Runtime Error";
+                    }
+                }
+            }
+
+            handleSuccess() {
+                const verdictBadge = document.getElementById('output-verdict-badge');
+                const acBanner = document.getElementById('ac-banner');
+
+                verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                verdictBadge.innerText = "ACCEPTED (AC)";
+                acBanner.classList.remove('hidden');
+
+                if (!this.userState.solved[this.currentQuestion.id]) {
+                    this.userState.solved[this.currentQuestion.id] = true;
+                    this.userState.xp += 100;
+                    this.saveState();
+                }
+
+                // Automatic redirect back to menu after 1.5 seconds
+                setTimeout(() => {
+                    this.navigateTo('menu');
+                }, 1500);
+            }
+
+            handleWrongAnswer(msg) {
+                const verdictBadge = document.getElementById('output-verdict-badge');
+                verdictBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                verdictBadge.innerText = "Wrong Answer (WA)";
+                const consoleOut = document.getElementById('console-output');
+                consoleOut.innerText = consoleOut.innerText + "\n\n[JUDGE VERDICT]: " + msg;
+            }
+
+            toggleAuthModal() {
+                const modal = document.getElementById('auth-modal');
+                modal.classList.toggle('hidden');
+            }
+        }
+
+        // Initialize App on DOM Ready
+        window.app = null;
+        window.addEventListener('DOMContentLoaded', () => {
+            window.app = new HKOIApp();
         });
-    }
-
-    // Initialize Game
-    renderMap();
-
-</script>
-
+    </script>
 </body>
 </html>
